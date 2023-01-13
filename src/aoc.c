@@ -48,8 +48,8 @@ main(int argc, char **argv)
 
 	switch (day) {
 	case 1: day01(); break;
-	/*
 	case 2: day02(); break;
+	/*
 	case 3: day03(); break;
 	case 4: day04(); break;
 	case 5: day05(); break;
@@ -76,5 +76,7 @@ main(int argc, char **argv)
 	*/
 	}
 
+	fclose(stdin);
+	
 	return 0;
 }
