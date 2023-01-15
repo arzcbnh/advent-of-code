@@ -1,0 +1,9 @@
+[submodule "vendor/c-vector"]
+	path = vendor/c-vector
+	url = ./vendor/c-vector
+[submodule "vendor/getopt"]
+	path = vendor/getopt
+	url = ./vendor/getopt
+[submodule "vendor/sds"]
+	path = vendor/sds
+	url = ./vendor/sds
