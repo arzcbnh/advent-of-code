@@ -13,7 +13,7 @@ find_common_bit(char **binaries_vec, int index, Gas detecting)
 	for (int i = 0; i < vector_size(binaries_vec); i++)
 		frequency += binaries_vec[i][index] - '0' ? 1 : -1;
 
-	return detecting == CO2 && frequency < 0 || detecting == O2 && frequency >= 0;
+	return (detecting == CO2 && frequency < 0) || (detecting == O2 && frequency >= 0);
 }
 
 static int
@@ -26,7 +26,6 @@ find_rate(char **binaries_vec, Gas detecting)
 
 	for (int index = 0; vector_size(copy_vec) > 1; index++) {
 		char common = find_common_bit(copy_vec, index, detecting) + '0';
-		int remaining = 0;
 
 		for (int i = 0; i < vector_size(copy_vec); i++)
 			if (copy_vec[i][index] != common)

@@ -17,8 +17,12 @@ main(int argc, char **argv)
 		switch (opt) {
 		case 'c':
 			custom_input = true;
+			break;
 		case 't':
 			test = true;
+			break;
+		case '?':
+			fprintf(stderr, "aoc: error: unknown option %c\n", opt);
 		}
 
 	if (day < 1 || day > 25) {
@@ -28,15 +32,13 @@ main(int argc, char **argv)
 	
 	if (custom_input) {
 		stdin = fopen("input", "r");
-	} else {
-		char path[16];
-		sprintf(path, "input/%0.2i.txt", day);
-		stdin = fopen(path, "r");
-	}
-
-	if (test) {
+	} else if (test) {
 		stdin = fopen("test", "r");
 		if (stdin == NULL) stdin = fopen("test.txt", "r");
+	} else {
+		char path[16];
+		sprintf(path, "input/%02i.txt", day);
+		stdin = fopen(path, "r");
 	}
 	
 	if (stdin == NULL) {
@@ -44,7 +46,7 @@ main(int argc, char **argv)
 		return 1;
 	}
 
-	printf("--- Advent of Code 2021 Day %0.2i ---\n", day);
+	printf("--- Advent of Code 2021 Day %02i ---\n", day);
 
 	switch (day) {
 	case 1: day01(); break;
