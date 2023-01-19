@@ -11,15 +11,16 @@ main(int argc, char **argv)
 {
 	int day = atoi(argv[argc - 1]);
 	char opt;
-	bool custom_input = false;
+	sds custom_input = NULL;
 
-	while ((opt = getopt(argc, argv, "i")) != -1) {
+	while ((opt = getopt(argc, argv, "c:")) != -1) {
 		switch (opt) {
-		case 'i':
-			custom_input = true;
+		case 'c':
+			custom_input = sdsnew(optarg);
 			break;
 		case '?':
 			fprintf(stderr, "aoc: error: unknown option %c\n", optopt);
+			break;
 		}
 	}
 
@@ -29,7 +30,8 @@ main(int argc, char **argv)
 	}
 	
 	if (custom_input) {
-		stdin = fopen("input", "r");
+		stdin = fopen(custom_input, "r");
+		sdsfree(custom_input);
 	} else {
 		sds path = sdsnew(INPUT_PATH "input/%02i.txt");
 		sprintf(path, path, day);

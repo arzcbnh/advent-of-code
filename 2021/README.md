@@ -13,8 +13,8 @@ $ meson setup build && cd build && meson compile
 ```
 ./aoc [options] <day>
 
--i
-	Loads a custom file called "input" from the root directory to be used as the program input. May be used to run arbitrary inputs for any day.
+-c <filename>
+	Loads a custom file <filename> from the current directory to be used as the program input. May be used to run arbitrary inputs for any day.
 
 <day>
 	Specify the day to solve. May be any integer between 1 and 25.
