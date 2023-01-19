@@ -4,6 +4,7 @@
 
 #include "aoc.h"
 #include "getopt.h"
+#include "sds.h"
 
 int
 main(int argc, char **argv)
@@ -12,7 +13,7 @@ main(int argc, char **argv)
 	char opt;
 	bool custom_input = false;
 
-	while ((opt = getopt(argc, argv, "i")) != -1)
+	while ((opt = getopt(argc, argv, "i")) != -1) {
 		switch (opt) {
 		case 'i':
 			custom_input = true;
@@ -20,6 +21,7 @@ main(int argc, char **argv)
 		case '?':
 			fprintf(stderr, "aoc: error: unknown option %c\n", optopt);
 		}
+	}
 
 	if (day < 1 || day > 25) {
 		fprintf(stderr, "aoc: error: day '%i' not available\n", day);
@@ -29,9 +31,10 @@ main(int argc, char **argv)
 	if (custom_input) {
 		stdin = fopen("input", "r");
 	} else {
-		char path[16];
-		sprintf(path, "input/%02i.txt", day);
+		sds path = sdsnew(INPUT_PATH "input/%02i.txt");
+		sprintf(path, path, day);
 		stdin = fopen(path, "r");
+		sdsfree(path);
 	}
 	
 	if (stdin == NULL) {

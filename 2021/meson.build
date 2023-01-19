@@ -1,7 +1,5 @@
 project('aoc', 'c')
 
-inc = include_directories('include')
-
 src = [
 	'src/aoc.c',
 	'src/01.c',
@@ -16,4 +14,10 @@ deps = [
 	subproject('sds').get_variable('main_dep')
 ]
 
-executable('aoc', src, dependencies: deps, include_directories: inc)
+inc = include_directories('include')
+
+args = [
+	'-DINPUT_PATH="' + meson.source_root() + '/"'
+]
+
+executable('aoc', src, dependencies: deps, include_directories: inc, c_args: args)

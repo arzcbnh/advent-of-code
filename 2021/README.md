@@ -5,7 +5,7 @@
 Requires Meson to build.
 
 ```
-$ ./compile.sh
+$ meson setup build && cd build && meson compile
 ```
 
 ## Usage
