@@ -10,19 +10,15 @@ main(int argc, char **argv)
 {
 	int day = atoi(argv[argc - 1]);
 	char opt;
-	bool custom_input, test;
-	custom_input = test = false;
+	bool custom_input = false;
 
-	while ((opt = getopt(argc, argv, "ct")) != -1)
+	while ((opt = getopt(argc, argv, "i")) != -1)
 		switch (opt) {
-		case 'c':
+		case 'i':
 			custom_input = true;
 			break;
-		case 't':
-			test = true;
-			break;
 		case '?':
-			fprintf(stderr, "aoc: error: unknown option %c\n", opt);
+			fprintf(stderr, "aoc: error: unknown option %c\n", optopt);
 		}
 
 	if (day < 1 || day > 25) {
@@ -32,9 +28,6 @@ main(int argc, char **argv)
 	
 	if (custom_input) {
 		stdin = fopen("input", "r");
-	} else if (test) {
-		stdin = fopen("test", "r");
-		if (stdin == NULL) stdin = fopen("test.txt", "r");
 	} else {
 		char path[16];
 		sprintf(path, "input/%02i.txt", day);
@@ -52,8 +45,8 @@ main(int argc, char **argv)
 	case 1: day01(); break;
 	case 2: day02(); break;
 	case 3: day03(); break;
-	/*
 	case 4: day04(); break;
+	/*
 	case 5: day05(); break;
 	case 6: day06(); break;
 	case 7: day07(); break;
