@@ -33,9 +33,11 @@ main(int argc, char **argv)
 		stdin = fopen(custom_input, "r");
 		sdsfree(custom_input);
 	} else {
-		sds path = sdsnew(INPUT_PATH "input/%02i.txt");
-		sprintf(path, path, day);
+		sds format = sdsnew(INPUT_PATH "input/%02i.txt");
+		sds path = sdsnewlen("", sdslen(format));
+		sprintf(path, format, day);
 		stdin = fopen(path, "r");
+		sdsfree(format);
 		sdsfree(path);
 	}
 	
