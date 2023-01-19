@@ -6,7 +6,8 @@ src = [
 	'src/aoc.c',
 	'src/01.c',
 	'src/02.c',
-	'src/03.c'
+	'src/03.c',
+	'src/04.c'
 ]
 
 deps = [
