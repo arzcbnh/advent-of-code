@@ -6,7 +6,8 @@ src = [
 	'src/02.c',
 	'src/03.c',
 	'src/04.c',
-	'src/05.c'
+	'src/05.c',
+	'src/06.c'
 ]
 
 deps = [
