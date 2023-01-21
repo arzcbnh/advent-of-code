@@ -24,8 +24,14 @@ for DAY in {1..7}; do
 
 	printf "day %02d: " "$DAY"
 	if [ "$OUTPUT" = "${RESULTS[$DAY - 1]}" ]; then
-		echo "OK"
+		printf "OK "
 	else
-		echo "FAIL"
+		printf "FAIL "
+	fi
+
+	if valgrind --error-exitcode=1 "$ROOTDIR/build/aoc" "$DAY" &> /dev/null; then
+		echo "MEMORY SAFE"
+	else
+		echo "MEMORY LEAK"
 	fi
 done
