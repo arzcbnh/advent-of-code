@@ -55,8 +55,8 @@ main(int argc, char **argv)
 	case 4: day04(); break;
 	case 5: day05(); break;
 	case 6: day06(); break;
-	/*
 	case 7: day07(); break;
+	/*
 	case 8: day08(); break;
 	case 9: day09(); break;
 	case 10: day10(); break;
