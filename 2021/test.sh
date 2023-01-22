@@ -12,6 +12,7 @@ RESULTS=(
 	"344605 93699985"
 	"390 1011785"
 	"585 827904"
+	"278475 3015539998"
 )
 
 if [ ! -e $ROOTDIR/build/aoc ]; then
@@ -19,7 +20,7 @@ if [ ! -e $ROOTDIR/build/aoc ]; then
 	exit 1
 fi
 
-for DAY in {1..9}; do
+for DAY in {1..10}; do
 	OUTPUT=$(eval "$ROOTDIR/build/aoc $DAY")
 	OUTPUT=$(echo $OUTPUT | cut -d' ' -f11,14)
 
