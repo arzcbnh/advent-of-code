@@ -1,6 +1,6 @@
 #include <stdio.h>
+#include <string.h>
 
-#include "sds.h"
 #include "vec.h"
 
 typedef enum { CO2, O2 } Gas;
@@ -33,8 +33,9 @@ find_rate(char **binaries_vec, Gas detecting)
 	}
 
 	int n = 0;
+	size_t length = strlen(*binaries_vec);
 
-	for (int i = 0; i < sdslen(*binaries_vec); i++)
+	for (int i = 0; i < length; i++)
 		n = (*copy_vec)[i] - '0' ? ~(~n << 1) : n << 1;
 
 	vector_free(copy_vec);
@@ -45,8 +46,9 @@ static int
 find_gamma(char **binaries_vec)
 {
 	int n = 0;
+	size_t length = strlen(*binaries_vec);
 
-	for (int i = 0; i < sdslen(*binaries_vec); i++)
+	for (int i = 0; i < length; i++)
 		n = find_common_bit(binaries_vec, i, O2) ? ~(~n << 1) : n << 1;
 
 	return n;
@@ -55,16 +57,16 @@ find_gamma(char **binaries_vec)
 static void
 input_data(char ***binaries_vec)
 {
-	char *bin = NULL;
+	char *input = NULL;
 	size_t len = 0;
 
-	while (getline(&bin, &len, stdin) > 0) {
-		sds bin_sds = sdsnew(bin);
-		sdstrim(bin_sds, "\n");
-		vector_add(binaries_vec, bin_sds);
+	while (getline(&input, &len, stdin) > 0) {
+		char *bin = strdup(input);
+		bin[strlen(bin) - 1] = 0;
+		vector_add(binaries_vec, bin);
 	}
 
-	free(bin);
+	free(input);
 }
 
 void
@@ -74,7 +76,7 @@ day03(void)
 	input_data(&binaries_vec);
 
 	int gamma = find_gamma(binaries_vec);
-	int epsilon = ~(~0U << sdslen(*binaries_vec)) ^ gamma;
+	int epsilon = ~(~0U << strlen(*binaries_vec)) ^ gamma;
 	int o2_rate = find_rate(binaries_vec, O2);
 	int co2_rate = find_rate(binaries_vec, CO2);
 
@@ -82,6 +84,6 @@ day03(void)
 	printf("Part 2: %u\n", o2_rate * co2_rate);
 
 	for (int i = 0; i < vector_size(binaries_vec); i++)
-		sdsfree(binaries_vec[i]);
+		free(binaries_vec[i]);
 	vector_free(binaries_vec);
 }
