@@ -63,7 +63,7 @@ input_tables(void)
 	Table **tables_vec = vector_create();
 
 	while (getchar() == '\n') {
-		Table *t = malloc(sizeof(Table));
+		Table *t = calloc(1, sizeof(Table));
 
 		for (int i = 0; i < 25; i++) {
 			char c = getchar();
