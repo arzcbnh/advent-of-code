@@ -17,6 +17,7 @@ RESULTS=(
 	"5254 149385"
 	"842 ###..####.#..#.###...##....##.####.#..#."
 	"3906 4441317262452"
+	"619 2922"
 )
 
 if [ ! -e $ROOTDIR/build/aoc ]; then
@@ -24,7 +25,7 @@ if [ ! -e $ROOTDIR/build/aoc ]; then
 	exit 1
 fi
 
-for DAY in {1..14}; do
+for DAY in {1..15}; do
 	OUTPUT=$(eval "$ROOTDIR/build/aoc $DAY")
 	OUTPUT=$(echo $OUTPUT | cut -d' ' -f11,14)
 	echo $OUTPUT
@@ -36,7 +37,7 @@ for DAY in {1..14}; do
 		printf "FAIL "
 	fi
 
-	if valgrind --error-exitcode=1 --leak-check=full "$ROOTDIR/build/aoc" "$DAY" &> /dev/null; then
+	if valgrind --max-stackframe=4194304 --error-exitcode=1 --leak-check=full "$ROOTDIR/build/aoc" "$DAY" &> /dev/null; then
 		echo "MEMORY SAFE"
 	else
 		echo "MEMORY LEAK"

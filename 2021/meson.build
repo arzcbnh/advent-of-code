@@ -15,7 +15,8 @@ src = [
 	'src/11.c',
 	'src/12.c',
 	'src/13.c',
-	'src/14.c'
+	'src/14.c',
+	'src/15.c'
 ]
 
 deps = [
@@ -28,7 +29,8 @@ deps = [
 inc = include_directories('include')
 
 args = [
-	'-DINPUT_PATH="' + meson.source_root() + '/"'
+	'-DINPUT_PATH="' + meson.source_root() + '/"',
+	'-Wl,--stack,4194304'
 ]
 
 executable('aoc', src, dependencies: deps, include_directories: inc, c_args: args)
