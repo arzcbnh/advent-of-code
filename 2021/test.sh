@@ -1,7 +1,5 @@
 #!/bin/bash
 
-ROOTDIR=$(dirname $BASH_SOURCE)
-
 RESULTS=(
 	"1292 1262"
 	"1499229 1340836560"
@@ -22,25 +20,63 @@ RESULTS=(
 	"35511 3282"
 )
 
-if [ ! -e $ROOTDIR/build/aoc ]; then
+executable="$(dirname "${BASH_SOURCE[0]}")/build/aoc"
+pass="PASS!"
+fail="FAIL!"
+
+if [ ! -e "$executable" ]; then
 	echo "executable not found"
 	exit 1
 fi
 
-for DAY in {1..17}; do
-	OUTPUT=$(eval "$ROOTDIR/build/aoc $DAY")
-	OUTPUT=$(echo $OUTPUT | cut -d' ' -f11,14)
+usage() { 
+	echo "Usage: $0 [-d <1-25>] [-v]" 1>&2;
+	exit 1;
+}
 
-	printf "day %02d: " "$DAY"
-	if [ "$OUTPUT" = "${RESULTS[$DAY - 1]}" ]; then
-		printf "OK "
+print_result() {
+	if [ "$1" ]; then
+		printf "\033[0;92m%s" "$pass"
 	else
-		printf "FAIL "
+		printf "\033[0;31m%s" "$fail"
+	fi
+	printf "\033[0m"
+}
+
+run_test() {
+	printf "Testing day %02d... Correct output: " "$1"
+	OUTPUT=$($executable "$1" | cut -d' ' -f11,14)
+	[ "$OUTPUT" = "${RESULTS[$1 - 1]}" ]
+	print_result "$?"
+
+	if [ "$VALGRIND" ]; then
+		printf " Memory safe: "
+		valgrind --max-stackframe=4194304 --error-exitcode=1 --leak-check=full "$executable" "$DAY" &> /dev/null
+		print_result "$?"
 	fi
 
-	if valgrind --max-stackframe=4194304 --error-exitcode=1 --leak-check=full "$ROOTDIR/build/aoc" "$DAY" &> /dev/null; then
-		echo "MEMORY SAFE"
-	else
-		echo "MEMORY LEAK"
-	fi
+	printf "\n"
+}
+
+while getopts ":d:v" opt; do
+	case $opt in
+	d)
+		SINGLE_DAY=$OPTARG
+		[ "$SINGLE_DAY" -lt 1 ] || [ "$SINGLE_DAY" -gt 25 ] && usage
+		;;
+	v)
+		VALGRIND=true
+		;;
+	*)
+		usage
+		;;
+	esac
 done
+
+if [ "$SINGLE_DAY" ]; then
+	run_test "$SINGLE_DAY"
+else
+	for DAY in {1..17}; do
+		run_test "$DAY"
+	done
+fi
