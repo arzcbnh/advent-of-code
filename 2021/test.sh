@@ -18,6 +18,7 @@ RESULTS=(
 	"619 2922"
 	"963 1549026292886"
 	"35511 3282"
+	"4365 4490"
 )
 
 executable="$(dirname "${BASH_SOURCE[0]}")/build/aoc"
@@ -76,7 +77,7 @@ done
 if [ "$SINGLE_DAY" ]; then
 	run_test "$SINGLE_DAY"
 else
-	for DAY in {1..17}; do
+	for DAY in {1..19}; do
 		run_test "$DAY"
 	done
 fi
