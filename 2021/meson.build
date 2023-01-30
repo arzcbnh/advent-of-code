@@ -20,10 +20,10 @@ src = [
 	'src/16.c',
 	'src/17.c',
 	'src/18.c',
+	'src/19.c'
 ]
 
 deps = [
-	subproject('c-hashmap').get_variable('main_dep'),
 	subproject('c-vector').get_variable('main_dep'),
 	subproject('getopt').get_variable('main_dep'),
 	subproject('sds').get_variable('main_dep'),
