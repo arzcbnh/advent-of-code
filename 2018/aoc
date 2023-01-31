@@ -1,0 +1,26 @@
+#!/bin/env lua
+
+if not arg[1] then
+	error("missing argument")
+end
+
+local day_number = tonumber(arg[1])
+local day_string = ("%02d"):format(day_number)
+local day_path = "day/" .. day_string .. ".lua"
+local input_path = "input/" .. day_string .. ".txt"
+
+if 1 <= day_number and day_number <= 25 then
+	local day_chunk, day_error_message = loadfile(day_path)
+	local input_file, input_error_message = io.open(input_path)
+
+	if day_error_message or input_error_message then
+		error(day_error_message or input_error_message)
+	end
+	
+	part1, part2 = day_chunk(input_file)
+	io.write("--- Advent of Code Day ", day_string, " ---\n")
+	io.write("Part 1: ", tostring(part1), "\n")
+	io.write("Part 2: ", tostring(part2), "\n")
+else
+	error("invalid day input \'" .. day_string .. "\' (must be integer between 1 and 25)")
+end
