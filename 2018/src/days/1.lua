@@ -1,10 +1,12 @@
+local utils = require "utils"
+
 local function main(input)
 	local frequency = 0
 	local repetitions = { [frequency] = 1 }
 	local first_repetition, calibration
 
 	while not first_repetition do
-		for line in string.gmatch(input, "[^\r\n]+") do
+		for line in utils.iterateLines(input) do
 			frequency = frequency + tonumber(line)
 			repetitions[frequency] = repetitions[frequency] or 0
 			repetitions[frequency] = repetitions[frequency] + 1
