@@ -7,6 +7,7 @@ end
 
 local scriptPath = string.sub(debug.getinfo(1, "S").source, 2)
 local rootDir = string.match(scriptPath, "(.*[/\\])")
+package.path = rootDir .. "src/?.lua;" .. rootDir .. "src/?/init.lua;" .. package.path
 
 local dayNumber = tonumber(arg[1])
 local dayString = string.format("%02d", dayNumber)
