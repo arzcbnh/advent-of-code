@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+
+if [ -z "$1" ] || [ -z "$2" ]; then
+    echo "usage: ./fetch-input <year> <day>"
+    return 1
+fi
+
+cd "$(dirname "$0")" || exit
+
+year=$1
+day=$2
+session=$(cat session)
+url="https://adventofcode.com/$year/day/$day/input"
+response=$(curl -sb "session=$session" "$url")
+
+echo "$response"
+
+if [ "$response" = "404 Not Found" ]; then
+    return 1
+fi
