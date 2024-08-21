@@ -1,26 +1,25 @@
-#!/bin/env lua
+#!/usr/bin/env lua
 
-if not arg[1] then
-	error("missing argument")
+if not arg[1] or type(tonumber(arg[1])) ~= "number" then
+	io.write("usage: ./aoc <day>\n")
+	return 1
 end
 
-local day_number = tonumber(arg[1])
-local day_string = ("%02d"):format(day_number)
-local day_path = "day/" .. day_string .. ".lua"
-local input_path = "input/" .. day_string .. ".txt"
+local scriptPath = string.sub(debug.getinfo(1, "S").source, 2)
+local rootDir = string.match(scriptPath, "(.*[/\\])")
+local dayNumber = tonumber(arg[1])
+local dayString = string.format("%02d", dayNumber)
+local dayModulePath = rootDir .. "/src/days/" .. dayNumber
 
-if 1 <= day_number and day_number <= 25 then
-	local day_chunk, day_error_message = loadfile(day_path)
-	local input_file, input_error_message = io.open(input_path)
-
-	if day_error_message or input_error_message then
-		error(day_error_message or input_error_message)
-	end
-	
-	part1, part2 = day_chunk(input_file)
-	io.write("--- Advent of Code Day ", day_string, " ---\n")
-	io.write("Part 1: ", tostring(part1), "\n")
-	io.write("Part 2: ", tostring(part2), "\n")
-else
-	error("invalid day input \'" .. day_string .. "\' (must be integer between 1 and 25)")
+if dayNumber < 1 or dayNumber > 25 then
+	io.write("error: <day> must be between 1 and 25\n")
+	return 1
 end
+
+local inputHandle = io.popen(rootDir .. "../fetch-input 2018 " .. dayNumber)
+local input = inputHandle:read("a")
+
+local part1, part2 = require(dayModulePath)(input)
+io.write("--- Advent of Code Day ", dayString, " ---\n")
+io.write("Part 1: ", tostring(part1), "\n")
+io.write("Part 2: ", tostring(part2), "\n")
