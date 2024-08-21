@@ -7,6 +7,7 @@ end
 
 local scriptPath = string.sub(debug.getinfo(1, "S").source, 2)
 local rootDir = string.match(scriptPath, "(.*[/\\])")
+
 local dayNumber = tonumber(arg[1])
 local dayString = string.format("%02d", dayNumber)
 local dayModulePath = rootDir .. "/src/days/" .. dayNumber
@@ -18,8 +19,11 @@ end
 
 local inputHandle = io.popen(rootDir .. "../fetch-input 2018 " .. dayNumber)
 local input = inputHandle:read("a")
+inputHandle:close()
 
-local part1, part2 = require(dayModulePath)(input)
+local dayProgram = require(dayModulePath)
+local part1, part2 = dayProgram(input)
+
 io.write("--- Advent of Code Day ", dayString, " ---\n")
 io.write("Part 1: ", tostring(part1), "\n")
 io.write("Part 2: ", tostring(part2), "\n")
