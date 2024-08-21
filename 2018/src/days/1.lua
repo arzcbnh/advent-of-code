@@ -2,24 +2,25 @@ local utils = require "utils"
 
 local function main(input)
 	local frequency = 0
-	local repetitions = { [frequency] = 1 }
-	local first_repetition, calibration
+	local repetitions = { [0] = 1 }
+	local firstSum, firstRepeatedFrequency
 
-	while not first_repetition do
+	while not firstRepeatedFrequency do
 		for line in utils.iterateLines(input) do
 			frequency = frequency + tonumber(line)
-			repetitions[frequency] = repetitions[frequency] or 0
-			repetitions[frequency] = repetitions[frequency] + 1
+			repetitions[frequency] = (repetitions[frequency] or 0) + 1
 		
 			if repetitions[frequency] == 2 then
-				first_repetition = first_repetition or frequency
+				firstRepeatedFrequency = firstRepeatedFrequency or frequency
+				-- The loop can't be broken because there's a chance a frequency
+				-- repeats before all changes are summed first
 			end
 		end
 
-		calibration = calibration or frequency
+		firstSum = firstSum or frequency
 	end
 
-	return calibration, first_repetition
+	return firstSum, firstRepeatedFrequency
 end
 
 return main
