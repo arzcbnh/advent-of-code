@@ -5,20 +5,16 @@ if not arg[1] or type(tonumber(arg[1])) ~= "number" then
 	return 1
 end
 
-local scriptPath = string.sub(debug.getinfo(1, "S").source, 2)
-local rootDir = string.match(scriptPath, "(.*[/\\])")
-package.path = rootDir .. "src/?.lua;" .. rootDir .. "src/?/init.lua;" .. package.path
-
 local dayNumber = tonumber(arg[1])
 local dayString = string.format("%02d", dayNumber)
-local dayModulePath = rootDir .. "/src/days/" .. dayNumber
+local dayModulePath = "days/" .. dayNumber
 
 if dayNumber < 1 or dayNumber > 25 then
 	io.write("error: <day> must be between 1 and 25\n")
 	return 1
 end
 
-local inputHandle = io.popen(rootDir .. "../fetch-input 2018 " .. dayNumber)
+local inputHandle = io.popen("../fetch-input 2018 " .. dayNumber)
 local input = inputHandle:read("a")
 inputHandle:close()
 
