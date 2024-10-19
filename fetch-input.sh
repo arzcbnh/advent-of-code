@@ -24,7 +24,7 @@ mkdir -p "cache/$YEAR"
 if [ ! -e "cache/$YEAR/$DAY" ]; then
     URL="https://adventofcode.com/$YEAR/day/$DAY/input"
     INPUT=$(curl -sSfb "session=$SESSION" "$URL")
-    printf "$INPUT\n" > "cache/$YEAR/$DAY"
+    printf "$INPUT" > "cache/$YEAR/$DAY"
 fi
 
 cat "cache/$YEAR/$DAY"
