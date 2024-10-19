@@ -14,7 +14,7 @@ const scriptPath = scriptDir + "fetch-input.sh";
 accessSync(scriptPath, constants.X_OK);
 
 const input = execSync(`${scriptPath} 2023 ${day}`).toString();
-const { solve } = await import(`./day/${day}`);
+const { solve } = await import(`#days/${day}`);
 const answers = solve(input);
 
 console.log(`--- Advent of Code 2023, day ${day} ---`);
