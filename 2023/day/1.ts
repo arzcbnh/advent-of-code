@@ -28,7 +28,7 @@ function processInput(input: string, pattern: RegExp) {
                 .map(num => spelledDigits[num] ?? Number(num));
 
             const first = digits.at(0);
-            const last  = digits.at(-1);
+            const last = digits.at(-1);
             const composite = Number(`${first}${last}`);
 
             return composite;
