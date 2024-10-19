@@ -6,6 +6,10 @@
         "outDir": "build",
         "forceConsistentCasingInFileNames": true,
         "strict": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+	"paths": [
+	    "#days/*": ["days/*.js"],
+	    "#utils": ["utils/index.js"]
+	]
     }
 }

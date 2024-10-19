@@ -19,5 +19,9 @@
     },
     "dependencies": {
         "node": "^22.10.0"
+    },
+    "imports": {
+        "#days/*": "./build/days/*.js",
+        "#utils": "./build/utils/index.js"
     }
 }
