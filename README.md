@@ -6,3 +6,4 @@ Solutions for the Advent of Code challenges. I solve each year with a different 
 | - | - |
 | 2018 | Lua 5.4 |
 | 2021 | C99 |
+| 2023 | TypeScript 5.6 on Node 22.10 |
