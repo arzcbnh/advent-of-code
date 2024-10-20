@@ -25,9 +25,6 @@ class Part {
 export function solve(input: string) {
     const lines = splitLines(input);
 
-
-    //const symbols = lines.flatMap((line, row) => Array.from(line.matchAll(/[^.\d]/g), match => [x, match.index]));
-
     const parts = lines.flatMap((line, row) => {
 	const numbers = Array.from(line.matchAll(/\d+/g));
 	const parts = [];
@@ -55,11 +52,51 @@ export function solve(input: string) {
 	return parts;
     })
 
+    const gears = lines.flatMap((line, row) => {
+	const asterisks = Array.from(line.matchAll(/\*/g));
+	const gears = [];
+
+	for (const asterisk of asterisks) {
+	    const lineAbove = lines[row - 1];
+	    const lineBelow = lines[row + 1];
+	    const column = asterisk.index;
+	    const numbers = [];
+
+	    if (lineAbove) {
+		lineAbove.matchAll(/\d+/g).forEach(match => {
+		    const fitsAround = match.index <= column + 1 && match.index + match[0].length - 1 >= column - 1;
+		    if (fitsAround) {
+			numbers.push(match[0])
+		    }
+		})
+	    }
+
+	    if (lineBelow) {
+		lineBelow.matchAll(/\d+/g).forEach(match => {
+		    const fitsAround = match.index <= column + 1 && match.index + match[0].length - 1 >= column - 1;
+		    if (fitsAround) {
+			numbers.push(match[0])
+		    }
+		})
+	    }
+
+	    line.matchAll(/\d+/g).forEach(match => {
+		const fitsAround = match.index <= column + 1 && match.index + match[0].length - 1 >= column - 1;
+		if (fitsAround) {
+		    numbers.push(match[0])
+		}
+	    })
+
+	    if (numbers.length === 2) {
+		gears.push(Number(numbers[0]) * Number(numbers[1]))
+	    }
+	}
+
+	return gears;
+    })
+
     const part1 = parts.reduce((sum, num) => sum + num)
-
-
-
-
+    const part2 = gears.reduce((sum, num) => num + sum)
 
 /*    const parts = lines.flatMap((line, row) =>
         Array.from(line.matchAll(/\d+/g)).map(match => new Part(match[0], row, match.index))
@@ -82,5 +119,5 @@ export function solve(input: string) {
 
     const part1 = parts.filter(part => part.isAdjacent).reduce((sum, part) => sum + part.number, 0)
 */
-    return { part1 };
+    return { part1, part2 };
 }
