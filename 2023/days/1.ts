@@ -1,5 +1,3 @@
-import { splitLines } from "#utils";
-
 export function solve(input: string) {
     const part1 = processInput(input, /\d/g);
     const part2 = processInput(input, /(?=(\d|one|two|three|four|five|six|seven|eight|nine))/g);
@@ -20,7 +18,7 @@ function processInput(input: string, pattern: RegExp) {
         nine: 9,
     };
 
-    return splitLines(input)
+    return input.split("\n")
         .map(line => {
             const digits = Array.from(line.matchAll(pattern))
                 .flat()

@@ -12,8 +12,11 @@ const scriptDir = import.meta.dirname.match(rootDirRegex)?.at(1);
 const scriptPath = scriptDir + "fetch-input.sh";
 
 accessSync(scriptPath, constants.X_OK);
+const input = execSync(`${scriptPath} 2023 ${day}`)
+    .toString()
+    .replace(/[\r\n]+/g, "\n") // Normalize newline
+    .replace(/\n+$/, "");      // Remove trailing newline
 
-const input = execSync(`${scriptPath} 2023 ${day}`).toString();
 const { solve } = await import(`#days/${day}`);
 const answers = solve(input);
 

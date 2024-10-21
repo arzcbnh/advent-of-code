@@ -1,5 +1,3 @@
-import { splitLines } from "#utils";
-
 class Game {
     id: number;
     red: number;
@@ -29,7 +27,7 @@ export function solve(input: string) {
         blue: 14,
     } as const;
 
-    const games = splitLines(input).map(line => new Game(line));
+    const games = input.split("\n").map(line => new Game(line));
 
     const part1 = games.reduce((sum, game) => {
         const hasEnoughDie = game.red <= maxDie.red && game.blue <= maxDie.blue && game.green <= maxDie.green;

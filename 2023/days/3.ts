@@ -1,7 +1,5 @@
-import { splitLines } from "#utils";
-
 export function solve(input: string) {
-    const lines = splitLines(input);
+    const lines = input.split("\n");
 
     const sumAll = (acc: number, num: number) => acc + num;
     const matchToNumber = (match: RegExpExecArray) => Number(match[0]);
