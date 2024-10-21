@@ -4,7 +4,7 @@ set -e
 cd "$(dirname "$0")"
 
 error() {
-    printf "%s" "\033[1;37;41m$1\033[0m\n" 1>&2
+    printf "\033[1;37;41m%s\033[0m\n" "$1" 1>&2
     exit 1
 }
 
