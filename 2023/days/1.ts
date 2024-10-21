@@ -18,7 +18,8 @@ function processInput(input: string, pattern: RegExp) {
         nine: 9,
     };
 
-    return input.split("\n")
+    return input
+        .split("\n")
         .map(line => {
             const digits = Array.from(line.matchAll(pattern))
                 .flat()
