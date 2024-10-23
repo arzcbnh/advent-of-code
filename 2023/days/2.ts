@@ -18,11 +18,11 @@ class Game {
     }
 
     get hasEnoughDie() {
-	return this.red <= maxDie.red && this.blue <= maxDie.blue && this.green <= maxDie.green;
+	return this.red <= MAX_DIE.red && this.blue <= MAX_DIE.blue && this.green <= MAX_DIE.green;
     }
 }
 
-const maxDie = {
+const MAX_DIE = {
     red: 12,
     green: 13,
     blue: 14,

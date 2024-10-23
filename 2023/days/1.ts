@@ -1,6 +1,6 @@
 import { parse } from "#utils/stringx";
 
-const spelledDigits: { [key: string]: number } = {
+const SPELLED_DIGITS: { [key: string]: number } = {
     one: 1,
     two: 2,
     three: 3,
@@ -12,7 +12,7 @@ const spelledDigits: { [key: string]: number } = {
     nine: 9,
 } as const;
 
-const spelledToDigit = (num: string) => spelledDigits[num] ?? num;
+const spelledToDigit = (num: string) => SPELLED_DIGITS[num] ?? num;
 const sumValues = (sum: number, val: number) => sum + val;
 
 export function solve(document: string) {
