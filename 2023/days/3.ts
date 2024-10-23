@@ -20,7 +20,7 @@ export function solve(schematic: string) {
     const lines = schematic.split("\n");
 
     const part1 = getSerials(lines)
-        .filter(serial => isSerial(lines, serial))
+        .filter(serial => isPart(lines, serial))
         .reduce((acc, serial) => acc + serial.value, 0);
 
     const part2 = getStars(lines)
@@ -45,7 +45,7 @@ function buildSerialFromMatch(match: Match, row: number): Serial {
     return { value, start, end, row };
 }
 
-function isSerial(lines: string[], serial: Serial): boolean {
+function isPart(lines: string[], serial: Serial): boolean {
     const window = lines[subarray](serial.row - 1, serial.row + 2);
     const frames = window.map(line => line.substring(serial.start - 1, serial.end + 1));
     const symbols = frames.flatMap(line => line[parse](/[^.\d]/g));
