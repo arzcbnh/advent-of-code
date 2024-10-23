@@ -10,7 +10,7 @@
         "baseUrl": "./",
         "paths": {
             "#days/*": ["days/*.js"],
-            "#utils": ["utils/index.js"]
+            "#utils/*": ["utils/*.js"]
         }
     }
 }

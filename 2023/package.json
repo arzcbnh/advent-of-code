@@ -22,6 +22,6 @@
     },
     "imports": {
         "#days/*": "./build/days/*.js",
-        "#utils": "./build/utils/index.js"
+        "#utils/*": "./build/utils/*.js"
     }
 }
