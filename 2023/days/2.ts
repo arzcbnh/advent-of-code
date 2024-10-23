@@ -1,3 +1,5 @@
+import { parse } from "#utils/stringx";
+
 class Game {
     id: number;
     red: number;
@@ -25,9 +27,7 @@ const maxAmount = (max: number, num: number) => (max > num ? max : num);
 
 function findGreatestDieCount(set: string, color: string) {
     const regex = new RegExp(`(\\d+) ${color}`, "g");
-    return set
-        .matchAll(regex)
-        .toArray()
+    return set[parse](regex)
         .map(match => Number(match[1]))
         .reduce(maxAmount);
 }

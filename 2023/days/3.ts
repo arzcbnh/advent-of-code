@@ -1,4 +1,5 @@
 import { subarray } from "#utils/arrayx";
+import { parse } from "#utils/stringx";
 
 type Match = RegExpExecArray;
 
@@ -29,7 +30,7 @@ export function solve(schematic: string) {
 
 function getSerials(schematic: string): Serial[] {
     const lines = schematic.split("\n");
-    const parsed = lines.map(line => line.matchAll(/\d+/g).toArray());
+    const parsed = lines.map(line => line[parse](/\d+/g));
     const serials = parsed.flatMap((line, index) => line.map(match => buildSerialFromMatch(match, index)));
 
     return serials;
@@ -46,14 +47,14 @@ function buildSerialFromMatch(match: Match, row: number): Serial {
 function isSerial(schematic: string, serial: Serial): boolean {
     const lines = schematic.split("\n")[subarray](serial.row - 1, serial.row + 2);
     const frames = lines.map(line => line.substring(serial.start - 1, serial.end + 1));
-    const symbols = frames.flatMap(line => line.matchAll(/[^.\d]/g).toArray());
+    const symbols = frames.flatMap(line => line[parse](/[^.\d]/g));
 
     return symbols.some(symbol => symbol != null);
 }
 
 function getStars(schematic: string): Star[] {
     const lines = schematic.split("\n");
-    const parsed = lines.map(line => line.matchAll(/\*/g).toArray());
+    const parsed = lines.map(line => line[parse](/\*/g));
     const stars = parsed.flatMap((line, row) => line.map(({ index: column }) => ({ row, column }) as Star));
 
     return stars;

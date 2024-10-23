@@ -1,3 +1,5 @@
+import { parse } from "#utils/stringx";
+
 const spelledDigits: { [key: string]: number } = {
     one: 1,
     two: 2,
@@ -24,7 +26,7 @@ function sumValuesIn(document: string, pattern: RegExp) {
     return document
         .split("\n")
         .map(line => {
-            const digits = line.matchAll(pattern).toArray().flat().filter(Boolean).map(spelledToDigit);
+            const digits = line[parse](pattern).flat().filter(Boolean).map(spelledToDigit);
 
             const first = digits.at(0);
             const last = digits.at(-1);
