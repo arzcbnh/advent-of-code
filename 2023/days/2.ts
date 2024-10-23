@@ -18,7 +18,7 @@ class Game {
     }
 
     get hasEnoughDie() {
-	return this.red <= MAX_DIE.red && this.blue <= MAX_DIE.blue && this.green <= MAX_DIE.green;
+        return this.red <= MAX_DIE.red && this.blue <= MAX_DIE.blue && this.green <= MAX_DIE.green;
     }
 }
 
