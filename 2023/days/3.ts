@@ -17,19 +17,20 @@ interface Star {
 }
 
 export function solve(schematic: string) {
-    const part1 = getSerials(schematic)
-        .filter(serial => isSerial(schematic, serial))
+    const lines = schematic.split("\n");
+
+    const part1 = getSerials(lines)
+        .filter(serial => isSerial(lines, serial))
         .reduce((acc, serial) => acc + serial.value, 0);
 
-    const part2 = getStars(schematic)
-        .map(star => setRatio(schematic, star))
+    const part2 = getStars(lines)
+        .map(star => setRatio(lines, star))
         .reduce((acc, star) => acc + (star.ratio ?? 0), 0);
 
     return { part1, part2 };
 }
 
-function getSerials(schematic: string): Serial[] {
-    const lines = schematic.split("\n");
+function getSerials(lines: string[]): Serial[] {
     const parsed = lines.map(line => line[parse](/\d+/g));
     const serials = parsed.flatMap((line, index) => line.map(match => buildSerialFromMatch(match, index)));
 
@@ -44,25 +45,24 @@ function buildSerialFromMatch(match: Match, row: number): Serial {
     return { value, start, end, row };
 }
 
-function isSerial(schematic: string, serial: Serial): boolean {
-    const lines = schematic.split("\n")[subarray](serial.row - 1, serial.row + 2);
-    const frames = lines.map(line => line.substring(serial.start - 1, serial.end + 1));
+function isSerial(lines: string[], serial: Serial): boolean {
+    const window = lines[subarray](serial.row - 1, serial.row + 2);
+    const frames = window.map(line => line.substring(serial.start - 1, serial.end + 1));
     const symbols = frames.flatMap(line => line[parse](/[^.\d]/g));
 
     return symbols.some(symbol => symbol != null);
 }
 
-function getStars(schematic: string): Star[] {
-    const lines = schematic.split("\n");
+function getStars(lines: string[]): Star[] {
     const parsed = lines.map(line => line[parse](/\*/g));
     const stars = parsed.flatMap((line, row) => line.map(({ index: column }) => ({ row, column }) as Star));
 
     return stars;
 }
 
-function setRatio(schematic: string, star: Star): Star {
-    const lines = schematic.split("\n")[subarray](star.row - 1, star.row + 2);
-    const serials = getSerials(lines.join("\n"));
+function setRatio(lines: string[], star: Star): Star {
+    const window = lines[subarray](star.row - 1, star.row + 2);
+    const serials = getSerials(window);
     const around = serials.filter(serial => isSerialAroundStar(serial, star));
     const values = around.map(({ value }) => value);
 
