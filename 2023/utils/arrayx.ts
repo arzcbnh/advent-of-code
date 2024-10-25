@@ -1,12 +1,33 @@
+export const group = Symbol();
 export const subarray = Symbol();
 export const windowed = Symbol();
 
 declare global {
     interface Array<T> {
+        [group]: (size: number) => T[][];
         [subarray]: (start: number, end?: number) => T[];
         [windowed]: (size: number) => T[][];
     }
 }
+
+/**
+ * Splits the array into groups. Throws an error if the array can't be evenly
+ * divided.
+ * @param size - The size of each group.
+ */
+Array.prototype[group] = function <T>(size: number) {
+    if (this.length % size) {
+        throw new Error("Array items can't be grouped without leftovers");
+    }
+
+    const groups: T[][] = [];
+
+    for (let i = 0; i < this.length; i += size) {
+        groups.push(this.slice(i, i + size));
+    }
+
+    return groups;
+};
 
 /**
  * Emulates String.prototype.substring
