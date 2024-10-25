@@ -9,7 +9,7 @@ if (Number.isNaN(day) || day < 1 || day > 25) {
 const scriptDir = import.meta.dirname.match(/(^.*\/)2023/)!.at(1);
 const scriptPath = scriptDir + "fetch-input.sh";
 const input = execSync(`env sh ${scriptPath} 2023 ${day}`, { encoding: "utf8" })
-    .replace(/[\r\n]+/g, "\n") // Normalize newline
+    .replace(/\r?\n/g, "\n") // Normalize newline
     .replace(/\n+$/, ""); // Remove trailing newline
 
 const { solve } = await import(`#days/${day}`);
