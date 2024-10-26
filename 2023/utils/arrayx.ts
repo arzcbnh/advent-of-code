@@ -1,12 +1,14 @@
 export const group = Symbol();
 export const subarray = Symbol();
 export const windowed = Symbol();
+export const zip = Symbol();
 
 declare global {
     interface Array<T> {
         [group]: (size: number) => T[][];
         [subarray]: (start: number, end?: number) => T[];
         [windowed]: (size: number) => T[][];
+        [zip]: () => T[];
     }
 }
 
@@ -63,4 +65,15 @@ Array.prototype[windowed] = function <T>(size: number) {
     }
 
     return res;
+};
+
+Array.prototype[zip] = function () {
+    const arr = [];
+
+    for (let i = 0; i < this[0].length; i++) {
+        const a = this.reduce((a, b) => [...a, b[i]], []);
+        arr.push(a);
+    }
+
+    return arr;
 };
