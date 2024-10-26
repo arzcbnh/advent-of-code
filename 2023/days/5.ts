@@ -32,8 +32,8 @@ export function solve(almanac: string) {
 function createConverter(data: string): Converter {
     const ciphers = parseCiphers(data);
 
-    return resources =>
-        resources.reduce((converted, resource) => {
+    return function convert(resources): ResourceRange[] {
+        return resources.reduce((converted, resource) => {
             const { range, shift } = ciphers.find(cipher => isInsideRange(cipher, resource)) ?? identityCipher;
             const overflows: ResourceRange[] = [];
 
@@ -47,8 +47,11 @@ function createConverter(data: string): Converter {
                 resource.end = range.end;
             }
 
-            return converted.concat([...overflows, { start: resource.start + shift, end: resource.end + shift }]);
+            return converted
+                .concat(convert(overflows))
+                .concat([{ start: resource.start + shift, end: resource.end + shift }]);
         }, [] as ResourceRange[]);
+    };
 }
 
 function parseCiphers(data: string): Cipher[] {
