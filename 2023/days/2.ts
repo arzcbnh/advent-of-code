@@ -1,4 +1,4 @@
-import { parse } from "#utils/stringx";
+import { parse } from "utils/stringx.js";
 
 class Game {
     id: number;

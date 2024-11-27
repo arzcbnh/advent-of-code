@@ -1,4 +1,4 @@
-import { parse } from "#utils/stringx";
+import { parse } from "utils/stringx.js";
 
 const SPELLED_DIGITS: { [key: string]: number } = {
     one: 1,

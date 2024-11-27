@@ -1,5 +1,5 @@
-import { parse } from "#utils/stringx";
-import { zip } from "#utils/arrayx";
+import { parse } from "utils/stringx.js";
+import { zip } from "utils/arrayx.js";
 
 export function solve(sheet: Input): Solution {
     const kernedRace = [sheet.replace(/ /g, "")[parse](/\d+/g).map(Number)];

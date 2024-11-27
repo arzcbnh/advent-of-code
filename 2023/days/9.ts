@@ -1,4 +1,4 @@
-import { parse } from "#utils/stringx";
+import { parse } from "utils/stringx.js";
 
 type Sequence = number[];
 type SumEdgesFunction = (sum: number, seq: Sequence) => number;

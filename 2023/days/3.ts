@@ -1,5 +1,5 @@
-import { subarray } from "#utils/arrayx";
-import { parse } from "#utils/stringx";
+import { subarray } from "utils/arrayx.js";
+import { parse } from "utils/stringx.js";
 
 type Match = RegExpExecArray;
 

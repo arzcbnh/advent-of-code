@@ -7,10 +7,6 @@
         "forceConsistentCasingInFileNames": true,
         "strict": true,
         "skipLibCheck": true,
-        "baseUrl": "./",
-        "paths": {
-            "#days/*": ["days/*.js"],
-            "#utils/*": ["utils/*.js"]
-        }
+        "baseUrl": "./"
     }
 }

@@ -1,5 +1,5 @@
-import { parse } from "#utils/stringx";
-import { group } from "#utils/arrayx";
+import { parse } from "utils/stringx.js";
+import { group } from "utils/arrayx.js";
 
 type Converter = (resources: ResourceRange[]) => ResourceRange[];
 

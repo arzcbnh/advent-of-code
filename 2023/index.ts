@@ -1,4 +1,4 @@
-import { fetchInput } from "#utils/fetchInput";
+import { fetchInput } from "utils/fetchInput.js";
 import fs from "node:fs";
 
 // Declare global types
@@ -27,7 +27,7 @@ const input = raw
     .replace(/\n+$/, ""); // Remove trailing newline
 
 // Obtain solution
-const { solve } = await import(`#days/${day}`) as { solve: Solver };
+const { solve } = (await import(`days/${day}.js`)) as { solve: Solver };
 const { part1, part2 } = solve(input);
 
 console.log(`--- Advent of Code 2023, day ${day} ---`);
