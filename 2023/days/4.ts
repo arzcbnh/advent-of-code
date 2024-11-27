@@ -1,32 +1,37 @@
-class Card {
+type Card = {
     wins: number;
     points: number;
     instances: number;
-
-    constructor(data: string) {
-        const [winning, drawn] = data
-            .split(":")[1]
-            .split("|")
-            .map(list => list.match(/\d+/g)!.map(Number));
-
-        this.wins = winning.filter(n => drawn.includes(n)).length;
-        this.points = 2 ** (this.wins - 1) * Number(this.wins > 0);
-        this.instances = 1;
-    }
-}
+};
 
 export function solve(table: Input): Solution {
-    const cards = table.split("\n").map(line => new Card(line));
+    const cards = table.split("\n").map(line => createCard(line));
     const part1 = cards.reduce((sum, card) => sum + card.points, 0);
     const part2 = cards.map(increaseSuccessors).reduce((sum, card) => sum + card.instances, 0);
 
     return { part1, part2 };
 }
 
-function increaseSuccessors(card: Card, index: number, cards: Card[]) {
+function createCard(line: string): Card {
+    const [winning, drawn] = line
+        .split(":")[1]
+        .split("|")
+        .map(list => list.match(/\d+/g)!.map(Number));
+
+    const wins = winning.filter(n => drawn.includes(n)).length;
+    const points = 2 ** (wins - 1) * Number(wins > 0);
+    const instances = 1;
+
+    return { wins, points, instances };
+}
+
+function increaseSuccessors(card: Card, index: number, cards: Card[]): Card {
     const succeeding = cards.slice(index + 1, index + card.wins + 1);
     const copies = card.instances;
 
-    succeeding.forEach(card => (card.instances += copies));
+    for (const card of succeeding) {
+        card.instances += copies;
+    }
+
     return card;
 }
