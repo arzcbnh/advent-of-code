@@ -5,15 +5,17 @@ import fs from "node:fs";
 const cacheDir = "cache";
 
 export async function fetchInput(day: number): Promise<string> {
+    // Return cached input if available
+    const inputPath = path.join(cacheDir, `${day}`);
+
+    if (fs.existsSync(inputPath)) {
+        return fs.readFileSync(inputPath, { encoding: "utf8" });
+    }
+
     // Ensure cache directory exists
     fs.mkdirSync(cacheDir, { recursive: true });
 
-    // Return cached input if available
-    if (isCached(day)) {
-        return fs.readFileSync(path.join(cacheDir, `${day}`), { encoding: "utf8" });
-    }
-
-    // Ensure session cookie is provided
+    // Obtain session cookie
     const session = process.env.AOC_SESSION;
 
     if (session == null) {
@@ -41,20 +43,6 @@ export async function fetchInput(day: number): Promise<string> {
         });
     });
 
-    cacheInput(day, input);
+    fs.writeFileSync(inputPath, input);
     return input;
-}
-
-function isCached(day: number): boolean {
-    try {
-        fs.accessSync(path.join(cacheDir, `${day}`), fs.constants.R_OK);
-        return true;
-    } catch (err) {
-        return false;
-    }
-}
-
-function cacheInput(day: number, input: string): void {
-    const file = fs.openSync(path.join(cacheDir, `${day}`), "w");
-    fs.writeSync(file, input);
 }
