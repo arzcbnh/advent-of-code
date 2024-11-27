@@ -1,75 +1,74 @@
 import { subarray } from "utils/arrayx.js";
-import { parse } from "utils/stringx.js";
 
-type Match = RegExpExecArray;
-
-interface Serial {
+type Part = {
     value: number;
     start: number;
     end: number;
     row: number;
-}
+};
 
-interface Star {
-    ratio: number | null;
+type Gear = {
+    ratio: number;
     column: number;
     row: number;
-}
+};
 
 export function solve(schematic: Input): Solution {
     const lines = schematic.split("\n");
+    const parts = createParts(lines);
+    const gears = createGears(lines, parts);
 
-    const part1 = getSerials(lines)
-        .filter(serial => isPart(lines, serial))
-        .reduce((acc, serial) => acc + serial.value, 0);
-
-    const part2 = getStars(lines)
-        .map(star => setRatio(lines, star))
-        .reduce((acc, star) => acc + (star.ratio ?? 0), 0);
+    const part1 = parts.reduce((acc, part) => acc + part.value, 0);
+    const part2 = gears.reduce((acc, gear) => acc + gear.ratio, 0);
 
     return { part1, part2 };
 }
 
-function getSerials(lines: string[]): Serial[] {
-    const parsed = lines.map(line => line[parse](/\d+/g));
-    const serials = parsed.flatMap((line, index) => line.map(match => buildSerialFromMatch(match, index)));
+function createParts(lines: string[]): Part[] {
+    const parsed = lines.map(line => Array.from(line.matchAll(/\d+/g)));
+    const serials = parsed.flatMap((line, row) =>
+        line.map(({ 0: match, index: start }) => {
+            const value = Number(match);
+            const end = start + match.length;
 
-    return serials;
+            return { value, start, end, row };
+        })
+    );
+
+    const parts = serials.filter(serial => isPart(lines, serial));
+
+    return parts;
 }
 
-function buildSerialFromMatch(match: Match, row: number): Serial {
-    const value = Number(match[0]);
-    const start = match.index;
-    const end = match.index + match[0].length;
-
-    return { value, start, end, row };
-}
-
-function isPart(lines: string[], serial: Serial): boolean {
+function isPart(lines: string[], serial: Part): boolean {
     const window = lines[subarray](serial.row - 1, serial.row + 2);
     const frames = window.map(line => line.substring(serial.start - 1, serial.end + 1));
-    const symbols = frames.flatMap(line => line[parse](/[^.\d]/g));
+    const symbols = frames.map(line => line.match(/[^.\d]/g));
 
     return symbols.some(symbol => symbol != null);
 }
 
-function getStars(lines: string[]): Star[] {
-    const parsed = lines.map(line => line[parse](/\*/g));
-    const stars = parsed.flatMap((line, row) => line.map(({ index: column }) => ({ row, column }) as Star));
+function createGears(lines: string[], parts: Part[]): Gear[] {
+    const parsed = lines.map(line => Array.from(line.matchAll(/\*/g)));
+    const stars = parsed.flatMap((line, row) =>
+        line.map(({ index: column }) => {
+            const partsAround = parts.filter(part => isSerialAroundStar(part, row, column));
+            const values = partsAround.map(({ value }) => value);
+            const ratio = values.length === 2 ? values[0] * values[1] : null;
 
-    return stars;
+            return { row, column, ratio };
+        })
+    );
+
+    const gears = stars.filter(isGear);
+
+    return gears;
 }
 
-function setRatio(lines: string[], star: Star): Star {
-    const window = lines[subarray](star.row - 1, star.row + 2);
-    const serials = getSerials(window);
-    const around = serials.filter(serial => isSerialAroundStar(serial, star));
-    const values = around.map(({ value }) => value);
-
-    star.ratio = around.length === 2 ? values[0] * values[1] : null;
-    return star;
+function isGear(star: Omit<Gear, "ratio"> & { ratio: number | null }): star is Gear {
+    return star.ratio != null;
 }
 
-function isSerialAroundStar(serial: Serial, star: Star) {
-    return serial != null && serial.start <= star.column + 1 && serial.end >= star.column;
+function isSerialAroundStar(serial: Part, row: number, column: number): boolean {
+    return serial.row >= row - 1 && serial.row <= row + 1 && serial.start <= column + 1 && serial.end >= column;
 }
