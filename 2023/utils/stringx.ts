@@ -2,7 +2,7 @@ export const parse = Symbol();
 
 declare global {
     interface String {
-        [parse]: (regexp: RegExp) => RegExpExecArray[];
+        [parse]: (regexp: RegExp) => string[];
     }
 }
 
@@ -11,6 +11,7 @@ declare global {
  * this string against a regular expression.
  * @param regexp - The regular expression
  */
-String.prototype[parse] = function (regexp: RegExp) {
-    return this.matchAll(regexp).toArray();
+String.prototype[parse] = function (regexp) {
+    const matches = Array.from(this.matchAll(regexp)).map(match => match[0]);
+    return matches;
 };
