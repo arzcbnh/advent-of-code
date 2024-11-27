@@ -1,29 +1,28 @@
-import { parse } from "utils/stringx.js";
 import { group } from "utils/arrayx.js";
+
+type ResourceRange = {
+    start: number;
+    end: number;
+};
+
+type Cipher = {
+    range: ResourceRange;
+    shift: number;
+};
 
 type Converter = (resources: ResourceRange[]) => ResourceRange[];
 
-interface ResourceRange {
-    start: number;
-    end: number;
-}
-
-interface Cipher {
-    range: ResourceRange;
-    shift: number;
-}
-
-const identityCipher = { range: { start: 0, end: Infinity }, shift: 0 };
+const identityCipher = { range: { start: 0, end: Infinity }, shift: 0 } as const satisfies Cipher;
 
 export function solve(almanac: Input): Solution {
-    const blocks = almanac.split("\n\n");
-    const seeds = blocks.shift()![parse](/\d+/g).map(Number);
-    const converters = blocks.map(block => createConverter(block));
+    const sections = almanac.split("\n\n");
+    const seeds = sections.shift()!.match(/\d+/g)!.map(Number);
+    const converters = sections.map(section => createConverter(section));
 
     const seedsAsIds = seeds.map(id => ({ start: id, end: id }));
-    const part1 = findClosestLocation(converters, seedsAsIds);
-
     const seedsAsRanges = seeds[group](2).map(pair => ({ start: pair[0], end: pair[0] + pair[1] - 1 }));
+
+    const part1 = findClosestLocation(converters, seedsAsIds);
     const part2 = findClosestLocation(converters, seedsAsRanges);
 
     return { part1, part2 };
@@ -32,25 +31,26 @@ export function solve(almanac: Input): Solution {
 function createConverter(data: string): Converter {
     const ciphers = parseCiphers(data);
 
-    return function convert(resources): ResourceRange[] {
-        return resources.reduce((converted, resource) => {
+    return resources => {
+        const converted = [];
+
+        for (const resource of resources) {
             const { range, shift } = ciphers.find(cipher => isInsideRange(cipher, resource)) ?? identityCipher;
-            const overflows: ResourceRange[] = [];
 
             if (resource.start < range.start) {
-                overflows.push({ start: resource.start, end: range.start - 1 });
+                resources.push({ start: resource.start, end: range.start - 1 });
                 resource.start = range.start;
             }
 
             if (resource.end > range.end) {
-                overflows.push({ start: range.end + 1, end: resource.end });
+                resources.push({ start: range.end + 1, end: resource.end });
                 resource.end = range.end;
             }
 
-            return converted
-                .concat(convert(overflows))
-                .concat([{ start: resource.start + shift, end: resource.end + shift }]);
-        }, [] as ResourceRange[]);
+            converted.push({ start: resource.start + shift, end: resource.end + shift });
+        }
+
+        return converted;
     };
 }
 
@@ -58,7 +58,7 @@ function parseCiphers(data: string): Cipher[] {
     const ranges = data
         .split("\n")
         .slice(1)
-        .map(line => line[parse](/\d+/g).map(Number))
+        .map(line => line.match(/\d+/g)!.map(Number))
         .map(({ 0: destination, 1: source, 2: length }) => {
             const range = { start: source, end: source + length - 1 };
             const shift = destination - source;
