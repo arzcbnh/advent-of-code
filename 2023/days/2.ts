@@ -1,26 +1,11 @@
-import { parse } from "utils/stringx.js";
-
-class Game {
+type Game = {
     id: number;
     red: number;
     blue: number;
     green: number;
-
-    constructor(set: string) {
-        this.id = Number(set.match(/Game (\d+):/)![1]);
-        this.red = findGreatestDieCount(set, "red");
-        this.blue = findGreatestDieCount(set, "blue");
-        this.green = findGreatestDieCount(set, "green");
-    }
-
-    get power() {
-        return this.red * this.blue * this.green;
-    }
-
-    get hasEnoughDie() {
-        return this.red <= MAX_DIE.red && this.blue <= MAX_DIE.blue && this.green <= MAX_DIE.green;
-    }
-}
+    power: number;
+    hasEnoughDie: boolean;
+};
 
 const MAX_DIE = {
     red: 12,
@@ -28,19 +13,30 @@ const MAX_DIE = {
     blue: 14,
 } as const;
 
-const maxAmount = (max: number, num: number) => (max > num ? max : num);
-
-function findGreatestDieCount(set: string, color: string) {
-    const regex = new RegExp(`(\\d+) ${color}`, "g");
-    return set[parse](regex)
-        .map(match => Number(match[1]))
-        .reduce(maxAmount);
-}
-
 export function solve(record: Input): Solution {
-    const games = record.split("\n").map(set => new Game(set));
+    const games = record.split("\n").map(set => createGame(set));
     const part1 = games.reduce((sum, game) => sum + game.id * Number(game.hasEnoughDie), 0);
     const part2 = games.reduce((sum, game) => sum + game.power, 0);
 
     return { part1, part2 };
+}
+
+function createGame(set: string): Game {
+    const id = Number(set.slice(set.indexOf(" ") + 1, set.indexOf(":")));
+    const red = findGreatestDieCount(set, "red");
+    const blue = findGreatestDieCount(set, "blue");
+    const green = findGreatestDieCount(set, "green");
+    const power = red * blue * green;
+    const hasEnoughDie = red <= MAX_DIE.red && blue <= MAX_DIE.blue && green <= MAX_DIE.green;
+
+    return { id, red, blue, green, power, hasEnoughDie };
+}
+
+function findGreatestDieCount(set: string, color: string): number {
+    const regex = new RegExp(`(\\d+) ${color}`, "g");
+    const greatest = Array.from(set.matchAll(regex))
+        .map(match => Number(match[1]))
+        .reduce((max, num) => (max > num ? max : num), 0);
+
+    return greatest;
 }
