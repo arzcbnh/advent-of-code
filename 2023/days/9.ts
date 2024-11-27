@@ -3,7 +3,7 @@ import { parse } from "#utils/stringx";
 type Sequence = number[];
 type SumEdgesFunction = (sum: number, seq: Sequence) => number;
 
-export function solve(report: string) {
+export function solve(report: Input): Solution {
     const derivations = report
         .split("\n")
         .map(line => line[parse](/-?\d+/g).map(Number) as Sequence)

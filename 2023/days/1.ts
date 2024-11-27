@@ -15,7 +15,7 @@ const SPELLED_DIGITS: { [key: string]: number } = {
 const spelledToDigit = (num: string) => SPELLED_DIGITS[num] ?? num;
 const sumValues = (sum: number, val: number) => sum + val;
 
-export function solve(document: string) {
+export function solve(document: Input): Solution {
     const part1 = sumValuesIn(document, /\d/g);
     const part2 = sumValuesIn(document, /(?=(\d|one|two|three|four|five|six|seven|eight|nine))/g);
 

@@ -15,7 +15,7 @@ class Card {
     }
 }
 
-export function solve(table: string) {
+export function solve(table: Input): Solution {
     const cards = table.split("\n").map(line => new Card(line));
     const part1 = cards.reduce((sum, card) => sum + card.points, 0);
     const part2 = cards.map(increaseSuccessors).reduce((sum, card) => sum + card.instances, 0);

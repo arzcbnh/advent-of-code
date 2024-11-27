@@ -16,7 +16,7 @@ interface Star {
     row: number;
 }
 
-export function solve(schematic: string) {
+export function solve(schematic: Input): Solution {
     const lines = schematic.split("\n");
 
     const part1 = getSerials(lines)

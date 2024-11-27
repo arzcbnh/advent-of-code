@@ -21,7 +21,7 @@ class Hand {
     }
 }
 
-export function solve(list: string) {
+export function solve(list: Input): Solution {
     const hands = list.split("\n").map(line => new Hand(line));
     const part1 = calcWinnings(hands);
 

@@ -15,7 +15,7 @@ interface Cipher {
 
 const identityCipher = { range: { start: 0, end: Infinity }, shift: 0 };
 
-export function solve(almanac: string) {
+export function solve(almanac: Input): Solution {
     const blocks = almanac.split("\n\n");
     const seeds = blocks.shift()![parse](/\d+/g).map(Number);
     const converters = blocks.map(block => createConverter(block));

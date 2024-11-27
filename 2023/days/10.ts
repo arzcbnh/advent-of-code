@@ -44,7 +44,7 @@ const JOINTS: Record<Pipe, Joint> = {
     [Pipe.NorthEast]: { down: true, left: true },
 } as const;
 
-export function solve(sketch: string) {
+export function solve(sketch: Input): Solution {
     const tiles = sketch
         .split("\n")
         .map(line => line.split(""))

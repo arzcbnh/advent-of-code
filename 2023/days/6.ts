@@ -1,7 +1,7 @@
 import { parse } from "#utils/stringx";
 import { zip } from "#utils/arrayx";
 
-export function solve(sheet: string) {
+export function solve(sheet: Input): Solution {
     const kernedRace = [sheet.replace(/ /g, "")[parse](/\d+/g).map(Number)];
     const races = sheet
         .split("\n")

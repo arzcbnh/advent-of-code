@@ -37,7 +37,7 @@ function findGreatestDieCount(set: string, color: string) {
         .reduce(maxAmount);
 }
 
-export function solve(record: string) {
+export function solve(record: Input): Solution {
     const games = record.split("\n").map(set => new Game(set));
     const part1 = games.reduce((sum, game) => sum + game.id * Number(game.hasEnoughDie), 0);
     const part2 = games.reduce((sum, game) => sum + game.power, 0);

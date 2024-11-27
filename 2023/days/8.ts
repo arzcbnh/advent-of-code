@@ -12,7 +12,7 @@ const INSTRUCTIONS = {
     R: "right",
 } as const;
 
-export function solve(document: string) {
+export function solve(document: Input): Solution {
     const blocks = document.split("\n\n");
     const instructions = (blocks[0].match(/L|R/g) as ("L" | "R")[]).map(char => INSTRUCTIONS[char]);
     const network = buildNetwork(blocks[1]);
