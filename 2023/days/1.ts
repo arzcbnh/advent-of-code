@@ -1,38 +1,57 @@
-import { parse } from "utils/stringx.js";
+type ParsedLine = (number | string)[];
 
-const SPELLED_DIGITS: { [key: string]: number } = {
-    one: 1,
-    two: 2,
-    three: 3,
-    four: 4,
-    five: 5,
-    six: 6,
-    seven: 7,
-    eight: 8,
-    nine: 9,
-} as const;
-
-const spelledToDigit = (num: string) => SPELLED_DIGITS[num] ?? num;
-const sumValues = (sum: number, val: number) => sum + val;
+const NUMERALS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"] as const;
 
 export function solve(document: Input): Solution {
-    const part1 = sumValuesIn(document, /\d/g);
-    const part2 = sumValuesIn(document, /(?=(\d|one|two|three|four|five|six|seven|eight|nine))/g);
+    const parsedLines = parseNumbers(document);
+    const parsedDigits = parsedLines.map(line => line.filter(x => typeof x === "string"));
+
+    const part1 = sumBoundaries(parsedDigits);
+    const part2 = sumBoundaries(parsedLines);
 
     return { part1, part2 };
 }
 
-function sumValuesIn(document: string, pattern: RegExp) {
-    return document
-        .split("\n")
-        .map(line => {
-            const digits = line[parse](pattern).flat().filter(Boolean).map(spelledToDigit);
+function parseNumbers(document: string): ParsedLine[] {
+    const numbers = document.split("\n").map(line => {
+        const matches = [];
+        const regex = new RegExp(["\\d", ...NUMERALS].join("|"), "g");
+        let match = regex.exec(line)?.[0];
 
-            const first = digits.at(0);
-            const last = digits.at(-1);
-            const value = Number(`${first}${last}`);
+        while (match != null) {
+            // Set regex index just one after the last match so it can match
+            // overlapping values.
+            regex.lastIndex -= match.length - 1;
+            matches.push(match);
+            match = regex.exec(line)?.[0];
+        }
 
-            return value;
-        })
-        .reduce(sumValues, 0);
+        const convertedMatches = matches.map(convertNumeral);
+        return convertedMatches;
+    });
+
+    return numbers;
+}
+
+function convertNumeral(num: string): number | string {
+    const numeralsAsStrings: readonly string[] = NUMERALS;
+    const idx = numeralsAsStrings.indexOf(num);
+
+    // Since digits are not numerals, they are not converted to a number, thus
+    // remaining as a string. This way, they can be differentiated for part 1 of
+    // the challenge - see 'parsedDigits' in 'solve'.
+    return idx > 0 ? idx : num;
+}
+
+function sumBoundaries(lines: ParsedLine[]): number {
+    const values = lines.map(line => {
+        const first = line.at(0);
+        const last = line.at(-1);
+        const value = Number(`${first}${last}`);
+
+        return value;
+    });
+
+    const sum = values.reduce((acc, num) => acc + num, 0);
+    return sum;
 }
