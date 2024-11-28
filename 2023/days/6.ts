@@ -1,8 +1,9 @@
 import { zip } from "utils/arrayx.js";
 
 export function solve(sheet: Input): Solution {
-    const kernedRace = [sheet.replace(/ /g, "").match(/\d+/g)!.map(Number)];
-    const races = sheet.split("\n").map(line => line.match(/\d+/g)!.map(Number));
+    const data = sheet.split("\n").map(line => line.slice(9).trim());
+    const kernedRace = [data.map(line => Number(line.replace(/ /g, "")))];
+    const races = data.map(line => line.split(/\s+/).map(Number));
 
     // When zipping the races at the variable definition, Prettier breaks it
     // into a new line, which causes ESLint to complain.

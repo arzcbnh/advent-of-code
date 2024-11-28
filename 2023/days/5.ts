@@ -16,8 +16,8 @@ const identityCipher = { range: { start: 0, end: Infinity }, shift: 0 } as const
 
 export function solve(almanac: Input): Solution {
     const sections = almanac.split("\n\n");
-    const seeds = sections.shift()!.match(/\d+/g)!.map(Number);
-    const converters = sections.map(section => createConverter(section));
+    const seeds = sections[0].slice(7).split(" ").map(Number);
+    const converters = sections.slice(1).map(section => createConverter(section));
 
     const seedsAsIds = seeds.map(id => ({ start: id, end: id }));
     const seedsAsRanges = seeds[group](2).map(pair => ({ start: pair[0], end: pair[0] + pair[1] - 1 }));
@@ -58,7 +58,7 @@ function parseCiphers(data: string): Cipher[] {
     const ranges = data
         .split("\n")
         .slice(1)
-        .map(line => line.match(/\d+/g)!.map(Number))
+        .map(line => line.split(" ").map(Number))
         .map(({ 0: destination, 1: source, 2: length }) => {
             const range = { start: source, end: source + length - 1 };
             const shift = destination - source;

@@ -51,7 +51,7 @@ const JOINTS: Record<Pipe, Partial<Joint>> = {
 
 export function solve(sketch: Input): Solution {
     const tiles = createTiles(sketch);
-    const start = tiles.flat().find(tile => tile.pipe === Pipe.Start)!;
+    const start = tiles.flat().filter(tile => tile.pipe === Pipe.Start)[0];
     const grid = Object.assign(tiles, { start });
 
     markPipes(grid);

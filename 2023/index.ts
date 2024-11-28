@@ -27,7 +27,7 @@ const input = raw
     .replace(/\n+$/, ""); // Remove trailing newline
 
 // Obtain solution
-const { solve } = (await import(`days/${day}.js`)) as { solve: Solver };
+const { solve }: { solve: Solver } = await import(`days/${day}.js`);
 const { part1, part2 } = solve(input);
 
 console.log(`--- Advent of Code 2023, day ${day} ---`);

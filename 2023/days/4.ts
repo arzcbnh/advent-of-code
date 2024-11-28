@@ -16,7 +16,7 @@ function createCard(line: string): Card {
     const [winning, drawn] = line
         .split(":")[1]
         .split("|")
-        .map(list => list.match(/\d+/g)!.map(Number));
+        .map(list => list.trim().split(/\D+/).map(Number));
 
     const wins = winning.filter(n => drawn.includes(n)).length;
     const points = 2 ** (wins - 1) * Number(wins > 0);
