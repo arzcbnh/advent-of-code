@@ -1,21 +1,23 @@
-type Instruction = "left" | "right";
-type Network = Record<string, Node>;
+enum Instruction {
+    L = "left",
+    R = "right",
+}
 
-interface Node {
+type Node = {
     name: string;
     left: Node;
     right: Node;
-}
+};
 
-const INSTRUCTIONS = {
-    L: "left",
-    R: "right",
-} as const;
+type Network = Record<string, Node>;
 
 export function solve(document: Input): Solution {
-    const blocks = document.split("\n\n");
-    const instructions = (blocks[0].match(/L|R/g) as ("L" | "R")[]).map(char => INSTRUCTIONS[char]);
-    const network = buildNetwork(blocks[1]);
+    const sections = document.split("\n\n");
+    const network = buildNetwork(sections[1]);
+    const instructions = sections[0]
+        .split("")
+        .filter(isInstruction)
+        .map(char => Instruction[char]);
 
     const part1 = countSteps(instructions, [network.AAA]);
     const part2 = countSteps(
@@ -26,15 +28,19 @@ export function solve(document: Input): Solution {
     return { part1, part2 };
 }
 
-function buildNetwork(nodeBlock: string) {
+function isInstruction(char: string): char is keyof typeof Instruction {
+    return char === "L" || char === "R";
+}
+
+function buildNetwork(nodeBlock: string): Network {
     const network: Network = {};
     const nodes = nodeBlock
         .split("\n")
-        .map(line => line.match(/(\w+) = \((\w+), (\w+)\)/)!)
-        .map(({ 1: name, 2: left, 3: right }) => ({ name, left, right }));
+        .map(line => line.split(/\W+/g))
+        .map(({ 0: name, 1: left, 2: right }) => ({ name, left, right }));
 
     for (const { name } of nodes) {
-        network[name] = { name } as Node;
+        network[name] = createNode(name);
     }
 
     for (const { name, left, right } of nodes) {
@@ -45,8 +51,22 @@ function buildNetwork(nodeBlock: string) {
     return network;
 }
 
-function countSteps(instructions: Instruction[], nodes: Node[]) {
-    let paths = nodes.map(node => ({ node, steps: 0 }));
+function createNode(name: string): Node {
+    const node = {
+        name,
+        get left() {
+            return this;
+        },
+        get right() {
+            return this;
+        },
+    };
+
+    return { ...node };
+}
+
+function countSteps(instructions: Instruction[], nodes: Node[]): number {
+    const paths = nodes.map(node => ({ node, steps: 0 }));
 
     for (const path of paths) {
         while (!path.node.name.match(/..Z/)) {
@@ -64,7 +84,7 @@ function countSteps(instructions: Instruction[], nodes: Node[]) {
     return lcm;
 }
 
-function greatestCommonDivisor(a: number, b: number) {
+function greatestCommonDivisor(a: number, b: number): number {
     let tmp: number;
 
     while (a % b > 0) {
