@@ -17,23 +17,28 @@ enum Pipe {
     NorthEast = "7",
 }
 
-interface Tile {
+type Tile = {
     pipe: Pipe;
     loc: Location;
     x: number;
     y: number;
-}
+};
 
 type Grid = Tile[][] & { start: Tile };
 
-interface Joint {
-    up?: boolean;
-    down?: boolean;
-    left?: boolean;
-    right?: boolean;
-}
+type TrackingData = {
+    isInside: boolean;
+    prevAngledPipe: Pipe;
+};
 
-const JOINTS: Record<Pipe, Joint> = {
+type Joint = {
+    up: boolean;
+    down: boolean;
+    left: boolean;
+    right: boolean;
+};
+
+const JOINTS: Record<Pipe, Partial<Joint>> = {
     [Pipe.None]: {},
     [Pipe.Start]: { up: true, right: true, down: true, left: true },
     [Pipe.Vertical]: { up: true, down: true },
@@ -45,11 +50,7 @@ const JOINTS: Record<Pipe, Joint> = {
 } as const;
 
 export function solve(sketch: Input): Solution {
-    const tiles = sketch
-        .split("\n")
-        .map(line => line.split(""))
-        .map((line, y) => line.map((char, x) => createTile(x, y, char)));
-
+    const tiles = createTiles(sketch);
     const start = tiles.flat().find(tile => tile.pipe === Pipe.Start)!;
     const grid = Object.assign(tiles, { start });
 
@@ -63,22 +64,31 @@ export function solve(sketch: Input): Solution {
     return { part1, part2 };
 }
 
-function createTile(x: number, y: number, char: string): Tile {
-    const pipe = convertToEnum(Pipe, char);
-    const loc = Location.Unknown;
+function createTiles(sketch: string): Tile[][] {
+    const tiles = sketch
+        .split("\n")
+        .map(line => line.split(""))
+        .map((line, y) =>
+            line.map((char, x) => {
+                const loc = Location.Unknown;
+                const pipe = convertToEnum(Pipe, char);
 
-    return { x, y, pipe, loc };
+                return { x, y, loc, pipe };
+            })
+        );
+
+    return tiles;
 }
 
 function markPipes(grid: Grid): void {
     let curr: Tile | undefined = grid.start;
     let next: Tile | undefined;
 
-    do {
+    while (curr != null) {
         next = findNextPipe(grid, curr);
         curr.loc = Location.Loop;
         curr = next;
-    } while (curr != null);
+    }
 }
 
 function findNextPipe(grid: Grid, pipe: Tile): Tile | undefined {
@@ -110,28 +120,52 @@ function areConnected(a: Tile, b: Tile): boolean {
 
 function markInsideArea(grid: Grid): void {
     for (const row of grid) {
-        let previousAngledPipe = Pipe.None;
-        let isInside = false;
-
-        for (const tile of row) {
-            const { pipe, loc } = tile;
-
-            if (isInside && loc === Location.Unknown) {
-                tile.loc = Location.Inside;
-                continue;
-            }
-
-            if (loc !== Location.Loop || pipe === Pipe.Horizontal) {
-                continue;
-            }
-
-            isInside = isInside !== isChangingArea(pipe, previousAngledPipe);
-            previousAngledPipe = pipe !== Pipe.Vertical ? pipe : previousAngledPipe;
-        }
+        markInsideRow(row);
     }
 }
 
-function isChangingArea(curr: Pipe, prev: Pipe): boolean  {
+function markInsideRow(row: Grid[number]): void {
+    const data = {
+        prevAngledPipe: Pipe.None,
+        isInside: false,
+    };
+
+    for (const tile of row) {
+        updateTileLocation(tile, data.isInside);
+
+        if (!isRelevantPipe(tile)) {
+            continue;
+        }
+
+        updateTrackingData(data, tile.pipe);
+    }
+}
+
+function updateTileLocation(tile: Tile, isInside: boolean): void {
+    const isUnknown = tile.loc === Location.Unknown;
+
+    if (isInside && isUnknown) {
+        tile.loc = Location.Inside;
+    }
+}
+
+function isRelevantPipe(tile: Tile): boolean {
+    const isInLoop = tile.loc === Location.Loop;
+    const isHorizontal = tile.pipe === Pipe.Horizontal;
+
+    return isInLoop && !isHorizontal;
+}
+
+function updateTrackingData(data: TrackingData, pipe: Pipe): void {
+    const isInside = data.isInside !== isChangingArea(pipe, data.prevAngledPipe);
+    const isVertical = pipe === Pipe.Vertical;
+    const prevAngledPipe = isVertical ? data.prevAngledPipe : pipe;
+
+    data.isInside = isInside;
+    data.prevAngledPipe = prevAngledPipe;
+}
+
+function isChangingArea(curr: Pipe, prev: Pipe): boolean {
     return (
         curr === Pipe.Vertical ||
         (prev === Pipe.SouthWest && curr === Pipe.NorthEast) ||
