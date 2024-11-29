@@ -4,9 +4,8 @@
     "scripts": {
         "build": "tsc --noEmitOnError",
         "dev": "tsx index.ts",
-        "format": "prettier . --write | grep -v 'unchanged'",
+        "format": "prettier . --write --gitignore | grep -v 'unchanged'",
         "lint": "eslint .",
-        "start": "node build/index.js",
         "test": "tsx test.ts"
     },
     "devDependencies": {
