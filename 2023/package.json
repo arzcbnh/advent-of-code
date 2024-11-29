@@ -1,4 +1,5 @@
 {
+    "name": "advent-of-code-2023",
     "type": "module",
     "scripts": {
         "build": "tsc --noEmitOnError",
@@ -20,6 +21,10 @@
     "dependencies": {
         "node": "^22.10.0"
     },
+    "bin": {
+        "aoc": "./build/cli.js"
+    },
+    "exports": "./build/index.js",
     "imports": {
         "#root/*": "./build/*"
     }

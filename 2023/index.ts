@@ -1,35 +1,22 @@
 import { fetchInput } from "#root/utils/fetchInput.js";
 import fs from "node:fs";
 
-// Declare global types
 declare global {
-    interface Solution {
+    type Input = string;
+    type Solution = {
         part1: string | number;
         part2: string | number;
-    }
-
-    type Input = string;
-    type Solver = (input: Input) => Solution;
+    };
 }
 
-// Parse arguments
-const day = Number(process.argv[2]);
-const useExample = Boolean(process.argv[3]);
+async function solveDay(day: number, useExample = false): Promise<Solution> {
+    const raw = useExample ? fs.readFileSync("example", { encoding: "utf8" }) : await fetchInput(day);
+    const input = raw
+        .replace(/\r?\n/g, "\n") // Normalize newline
+        .replace(/\n+$/, ""); // Remove trailing newline
 
-if (isNaN(day) || day < 1 || day > 25) {
-    throw new Error("'day' argument must be a number between 1 and 25");
+    const { solve } = await import(`#root/days/${day}.js`);
+    return solve(input);
 }
 
-// Get and prepare input
-const raw = useExample ? fs.readFileSync("example", { encoding: "utf8" }) : await fetchInput(day);
-const input = raw
-    .replace(/\r?\n/g, "\n") // Normalize newline
-    .replace(/\n+$/, ""); // Remove trailing newline
-
-// Obtain solution
-const { solve }: { solve: Solver } = await import(`#root/days/${day}.js`);
-const { part1, part2 } = solve(input);
-
-console.log(`--- Advent of Code 2023, day ${day} ---`);
-console.log("Part 1: " + part1);
-console.log("Part 2: " + part2);
+export { solveDay };
