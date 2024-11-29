@@ -2,18 +2,18 @@ import https from "node:https";
 import path from "node:path";
 import fs from "node:fs";
 
-const cacheDir = "cache";
+const inputDir = "inputs";
 
 export async function fetchInput(day: number): Promise<string> {
     // Return cached input if available
-    const inputPath = path.join(cacheDir, `${day}`);
+    const inputPath = path.join(inputDir, `${day}`);
 
     if (fs.existsSync(inputPath)) {
         return fs.readFileSync(inputPath, { encoding: "utf8" });
     }
 
     // Ensure cache directory exists
-    fs.mkdirSync(cacheDir, { recursive: true });
+    fs.mkdirSync(inputDir, { recursive: true });
 
     // Obtain session cookie
     const session = process.env.AOC_SESSION;
