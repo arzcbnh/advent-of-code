@@ -14,7 +14,7 @@ const STATUS_MESSAGE = {
     FAIL: `${red} FAIL ${xmark}${reset}`,
 } as const;
 
-const answers: Answer[] = JSON.parse(fs.readFileSync("answers.json", { encoding: "utf8" }));
+const answers: Answer[] = JSON.parse(fs.readFileSync("tests/answers.json", { encoding: "utf8" }));
 const expected: Solution[] = answers.map(({ 0: part1, 1: part2 }) => ({ part1, part2 }));
 
 const fails = [];
