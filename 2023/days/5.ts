@@ -1,4 +1,4 @@
-import { group } from "utils/arrayx.js";
+import { group } from "#root/utils/arrayx.js";
 
 type ResourceRange = {
     start: number;

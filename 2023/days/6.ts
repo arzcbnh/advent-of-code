@@ -1,4 +1,4 @@
-import { zip } from "utils/arrayx.js";
+import { zip } from "#root/utils/arrayx.js";
 
 export function solve(sheet: Input): Solution {
     const data = sheet.split("\n").map(line => line.slice(9).trim());

@@ -19,5 +19,8 @@
     },
     "dependencies": {
         "node": "^22.10.0"
+    },
+    "imports": {
+        "#root/*": "./build/*"
     }
 }

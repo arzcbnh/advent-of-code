@@ -7,7 +7,7 @@
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "outDir": "build",
-        "baseUrl": "./",
-        "rootDir": "."
+        "rootDir": ".",
+        "paths": { "#root/*": ["./*"] }
     }
 }

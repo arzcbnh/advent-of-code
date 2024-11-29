@@ -1,4 +1,4 @@
-import { subarray } from "utils/arrayx.js";
+import { subarray } from "#root/utils/arrayx.js";
 
 type Part = {
     value: number;

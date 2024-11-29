@@ -1,4 +1,4 @@
-import { convertToEnum } from "utils/convertToEnum.js";
+import { convertToEnum } from "#root/utils/convertToEnum.js";
 
 enum Location {
     Unknown,
