@@ -3,10 +3,10 @@
     "type": "module",
     "scripts": {
         "build": "tsc --noEmitOnError",
-        "dev": "tsx index.ts",
+        "dev": "tsx cli.ts",
         "format": "prettier . --write --gitignore | grep -v 'unchanged'",
         "lint": "eslint .",
-        "test": "tsx test.ts"
+        "test": "tsx tests/test.ts"
     },
     "devDependencies": {
         "@eslint/js": "^9.12.0",
