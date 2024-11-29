@@ -23,6 +23,9 @@ for (let day = 1; day <= expected.length; day++) {
     const obtained = await solveDay(day);
     console.log(`Testing day ${day}...`);
 
+    // While it does look like these try-catches could be simplified with a
+    // loop, it actually needs type narrowing which I'm too lazy to do in an
+    // efficient way right now.
     try {
         process.stdout.write("Part 1:");
         assert.equal(obtained.part1, expected[day - 1].part1);
@@ -47,27 +50,3 @@ for (let day = 1; day <= expected.length; day++) {
 if (fails.length > 0) {
     console.log("Fails: " + fails.join(", "));
 }
-
-/*
-async function test(name: string, fn: () => void | Promise<unknown>) {
-    let success = true;
-
-    try {
-        const result = fn();
-
-        if (result instanceof Promise) {
-            await result;
-        }
-    } catch (err) {
-        success = false;
-        console.error(err);
-    }
-
-    console.log(`Testing ${name}... ${success ? "SUCCESS" : "FAIL"}`);
-}
-
-test("fetchInput", async () => {
-    const response = await fetchInput(1);
-    assert.notEqual(response, "");
-});
-*/
