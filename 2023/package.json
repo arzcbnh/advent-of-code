@@ -6,7 +6,8 @@
         "dev": "tsx index.ts",
         "format": "prettier . --write | grep -v 'unchanged'",
         "lint": "eslint .",
-        "start": "node build/index.js"
+        "start": "node build/index.js",
+        "test": "tsx test.ts"
     },
     "devDependencies": {
         "@eslint/js": "^9.12.0",
