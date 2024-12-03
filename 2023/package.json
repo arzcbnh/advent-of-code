@@ -2,7 +2,7 @@
     "name": "advent-of-code-2023",
     "type": "module",
     "scripts": {
-        "build": "tsc --noEmitOnError",
+        "build": "tsc --noEmitOnError && chmod +x build/cli.ts",
         "dev": "tsx src/cli.ts",
         "format": "prettier . --write | grep -v 'unchanged'",
         "lint": "eslint .",
