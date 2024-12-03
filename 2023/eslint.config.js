@@ -7,6 +7,7 @@ export default [
     ...tseslint.configs.recommended,
     {
         rules: {
+            "no-empty": ["error", { allowEmptyCatch: true }],
             "@typescript-eslint/no-non-null-assertion": "error",
             "@typescript-eslint/consistent-type-assertions": ["error", { assertionStyle: "never" }],
         },
