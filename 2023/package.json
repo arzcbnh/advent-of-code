@@ -3,7 +3,7 @@
     "type": "module",
     "scripts": {
         "build": "tsc --noEmitOnError",
-        "dev": "tsx cli.ts",
+        "dev": "tsx src/cli.ts",
         "format": "prettier . --write | grep -v 'unchanged'",
         "lint": "eslint .",
         "test": "tsx tests/test.ts"
