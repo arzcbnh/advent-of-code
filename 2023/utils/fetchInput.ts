@@ -2,28 +2,55 @@ import https from "node:https";
 import path from "node:path";
 import fs from "node:fs";
 
-const inputDir = "inputs";
+const cachePath = setupCachePath();
 
 export async function fetchInput(day: number): Promise<string> {
+    let input;
+
     // Return cached input if available
-    const inputPath = path.join(inputDir, `${day}`);
+    input = readCached(day);
 
-    if (fs.existsSync(inputPath)) {
-        return fs.readFileSync(inputPath, { encoding: "utf8" });
+    if (input != null) {
+        return input;
     }
 
-    // Ensure cache directory exists
-    fs.mkdirSync(inputDir, { recursive: true });
+    // Perform request over network
+    input = requestInput(day);
 
-    // Obtain session cookie
-    const session = process.env.AOC_SESSION;
+    return input;
+}
 
-    if (session == null) {
-        throw new Error("AOC_SESSION is not defined");
+function setupCachePath(): string {
+    const xdg = process.env.XDG_CACHE_HOME;
+    const home = process.env.HOME;
+    let userCachePath;
+
+    if (xdg) {
+        userCachePath = xdg;
+    } else if (home) {
+        userCachePath = path.join(home, ".cache");
+    } else {
+        throw new Error("Unable to define user cache path");
     }
 
-    // Perform request
-    const headers = { Cookie: "session=" + session };
+    const aocCachePath = path.join(userCachePath, "arzcbnh-aoc/2023");
+    fs.mkdirSync(aocCachePath, { recursive: true });
+    return aocCachePath;
+}
+
+function readCached(day: number): string | null {
+    try {
+        const inputPath = path.join(cachePath, String(day));
+        const input = fs.readFileSync(inputPath, { encoding: "utf8" });
+        return input;
+    } catch {
+        return null;
+    }
+}
+
+async function requestInput(day: number): Promise<string> {
+    const inputPath = path.join(cachePath, String(day));
+    const headers = { Cookie: "session=" + getSessionCookie() };
     const url = `https://adventofcode.com/2023/day/${day}/input`;
 
     const input = await new Promise<string>((resolve, reject) => {
@@ -45,4 +72,14 @@ export async function fetchInput(day: number): Promise<string> {
 
     fs.writeFileSync(inputPath, input);
     return input;
+}
+
+function getSessionCookie(): string {
+    const session = process.env.AOC_SESSION;
+
+    if (session == null) {
+        throw new Error("AOC_SESSION is not defined");
+    }
+
+    return session;
 }
