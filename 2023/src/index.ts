@@ -10,6 +10,10 @@ declare global {
 }
 
 async function solveDay(day: number, useExample = false): Promise<Solution> {
+    if (isNaN(day) || day < 1 || day > 25) {
+        throw new Error("Day must be a number between 1 and 25");
+    }
+
     const raw = useExample ? fs.readFileSync("example", { encoding: "utf8" }) : await fetchInput(day);
     const input = raw
         .replace(/\r?\n/g, "\n") // Normalize newline
