@@ -3,21 +3,19 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>me.arzcbnh.adventofcode</groupId>
+  <groupId>me.arzcbnh</groupId>
   <artifactId>advent-of-code</artifactId>
+  <version>1.0.0</version>
 
   <name>advent-of-code</name>
   <description>Solutions for the Advent of Code 2024</description>
-  <version>1.0.0</version>
   <!-- <url>http://www.example.com</url> -->
+
+  <packaging>jar</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>21</maven.compiler.release>
-    <!-- <maven.jar.archive.manifest.addClasspath>true
-    </maven.jar.archive.manifest.addClasspath>
-    <maven.jar.archive.manifest.mainClass>me.arzcbnh.adventofcode.AdventOfCode
-    </maven.jar.archive.manifest.mainClass> -->
   </properties>
 
   <dependencies>
@@ -52,13 +50,13 @@
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.4.2</version>
-            <configuration>
-              <archive>
-                <manifest>
-                  <mainClass>me.arzcbnh.adventofcode.AdventOfCode</mainClass>
-                </manifest>
-              </archive>
-            </configuration>
+          <configuration>
+            <archive>
+              <manifest>
+                <mainClass>me.arzcbnh.adventofcode.AdventOfCode</mainClass>
+              </manifest>
+            </archive>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-install-plugin</artifactId>
@@ -76,6 +74,21 @@
         <plugin>
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <version>3.6.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>3.5.0</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>java</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <mainClass>me.arzcbnh.adventofcode.AdventOfCode</mainClass>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>

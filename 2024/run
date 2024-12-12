@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+
+mode="$1"
+shift
+
+case "$mode" in
+    "dev") mvn --quiet exec:java -Dexec.args="$@" -DskipTests;;
+esac
