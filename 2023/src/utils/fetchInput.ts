@@ -50,8 +50,11 @@ function readCached(day: number): string | null {
 
 async function requestInput(day: number): Promise<string> {
     const inputPath = path.join(cachePath, String(day));
-    const headers = { Cookie: "session=" + getSessionCookie() };
     const url = `https://adventofcode.com/2023/day/${day}/input`;
+    const headers = {
+        Cookie: "session=" + getSessionCookie(),
+        "User-Agent": "github.com/arzcbnh/advent-of-code by 1TzkVCrXPOqfUk0d@gmail.com",
+    };
 
     const input = await new Promise<string>((resolve, reject) => {
         const request = https.get(url, { headers });
