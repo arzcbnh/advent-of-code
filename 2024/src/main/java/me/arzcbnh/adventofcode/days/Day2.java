@@ -10,10 +10,7 @@ public class Day2 extends Day {
         private final List<Integer> levels;
         private final ValidationResult validationResult;
 
-        private record ValidationResult(
-            boolean isSafeByDefault,
-            boolean isSafeWithModule
-        ) {}
+        private record ValidationResult(boolean isSafeByDefault, boolean isSafeWithModule) {}
 
         public LevelSequence(List<Integer> l) {
             levels = List.copyOf(l);
@@ -23,8 +20,8 @@ public class Day2 extends Day {
         private ValidationResult validateSequence() {
             boolean isSafeByDefault = isSequenceSafe(levels);
             boolean isSafeWithModule = IntStream.range(0, levels.size())
-                .mapToObj(this::createSequenceWithoutIndex)
-                .anyMatch(LevelSequence::isSequenceSafe);
+                    .mapToObj(this::createSequenceWithoutIndex)
+                    .anyMatch(LevelSequence::isSequenceSafe);
 
             return new ValidationResult(isSafeByDefault, isSafeWithModule);
         }
@@ -79,9 +76,10 @@ public class Day2 extends Day {
 
     private List<LevelSequence> parseInput() {
         List<LevelSequence> reports = input.lines()
-            .map(line -> Arrays.stream(line.split(" ")).map(Integer::parseInt).toList())
-            .map(LevelSequence::new)
-            .toList();
+                .map(line ->
+                        Arrays.stream(line.split(" ")).map(Integer::parseInt).toList())
+                .map(LevelSequence::new)
+                .toList();
 
         return reports;
     }

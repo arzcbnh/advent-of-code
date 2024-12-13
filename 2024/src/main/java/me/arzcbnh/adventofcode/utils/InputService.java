@@ -1,11 +1,10 @@
 package me.arzcbnh.adventofcode.utils;
 
 import java.io.IOException;
-import java.nio.file.*;
 import java.net.URI;
 import java.net.http.*;
 import java.net.http.HttpResponse.BodyHandlers;
-
+import java.nio.file.*;
 import lombok.experimental.StandardException;
 
 public class InputService {
@@ -43,12 +42,15 @@ public class InputService {
         try {
             var client = HttpClient.newHttpClient();
             var sessionCookie = "session=" + session;
-            var url = new StringBuilder("https://adventofcode.com/2024/day/").append(day).append("/input").toString();
+            var url = new StringBuilder("https://adventofcode.com/2024/day/")
+                    .append(day)
+                    .append("/input")
+                    .toString();
             var request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .header("Cookie", sessionCookie)
-                .header("User-Agent", "github.com/arzcbnh/advent-of-code by 1TzkVCrXPOqfUk0d@gmail.com")
-                .build();
+                    .uri(URI.create(url))
+                    .header("Cookie", sessionCookie)
+                    .header("User-Agent", "github.com/arzcbnh/advent-of-code by 1TzkVCrXPOqfUk0d@gmail.com")
+                    .build();
 
             response = client.send(request, BodyHandlers.ofString());
         } catch (IOException e) {

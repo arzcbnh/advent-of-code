@@ -1,7 +1,7 @@
 package me.arzcbnh.adventofcode.days;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Day1 extends Day {
     public Day1(String input) {
@@ -49,7 +49,7 @@ public class Day1 extends Day {
     private static long calcSimilarityScore(List<Integer> locations1, List<Integer> locations2) {
         long score = 0;
 
-        for (var id: locations1) {
+        for (var id : locations1) {
             long occurrences = locations2.stream().filter(id::equals).count();
             score += id * occurrences;
         }

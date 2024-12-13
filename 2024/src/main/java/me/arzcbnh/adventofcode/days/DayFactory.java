@@ -2,7 +2,6 @@ package me.arzcbnh.adventofcode.days;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-
 import lombok.experimental.StandardException;
 
 public final class DayFactory {
