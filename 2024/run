@@ -4,5 +4,7 @@ mode="$1"
 shift
 
 case "$mode" in
+    "build") mvn package;;
     "dev") mvn --quiet exec:java -Dexec.args="$@" -DskipTests;;
+    *) java -jar target/advent-of-code-1.0.0.jar $mode $@;;
 esac
