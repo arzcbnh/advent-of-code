@@ -4,12 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Day1 extends Day {
-    public Day1(String input) {
-        super(input);
-    }
-
     public Answer solve() {
-        var lists = parseInput(input);
+        var lists = parseInput(getInput());
         List<Integer> locations1 = lists.get(0);
         List<Integer> locations2 = lists.get(1);
 

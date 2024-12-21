@@ -61,10 +61,6 @@ public class Day2 extends Day {
         }
     }
 
-    public Day2(String input) {
-        super(input);
-    }
-
     public Answer solve() {
         var reports = parseInput();
 
@@ -75,7 +71,8 @@ public class Day2 extends Day {
     }
 
     private List<LevelSequence> parseInput() {
-        List<LevelSequence> reports = input.lines()
+        List<LevelSequence> reports = getInput()
+                .lines()
                 .map(line ->
                         Arrays.stream(line.split(" ")).map(Integer::parseInt).toList())
                 .map(LevelSequence::new)

@@ -6,13 +6,9 @@ public class Day3 extends Day {
     private static final String DO_COMMAND = "do()";
     private static final String DONT_COMMAND = "don't()";
 
-    public Day3(String input) {
-        super(input);
-    }
-
     public Answer solve() {
         var pattern = Pattern.compile("do\\(\\)|don't\\(\\)|mul\\((\\d+),(\\d+)\\)");
-        var matcher = pattern.matcher(input);
+        var matcher = pattern.matcher(getInput());
 
         var part1 = evalOnlyMults(matcher);
         var part2 = evalWithControlOps(matcher);
