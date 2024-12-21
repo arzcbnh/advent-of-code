@@ -1,6 +1,8 @@
 package me.arzcbnh.adventofcode.days;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import me.arzcbnh.adventofcode.utils.Listx;
@@ -16,14 +18,16 @@ public class Day4 extends Day {
     }
 
     private static class Crosswords {
+        private enum Pattern {
+            XMAS,
+            CROSS_MAS
+        }
+
         private final List<List<Character>> grid;
-        private long xmasCount;
-        private long crossMasCount;
+        private final Map<Pattern, Long> patternCounts = new EnumMap<>(Pattern.class);
 
         private Crosswords(List<List<Character>> grid) {
             this.grid = grid;
-            this.xmasCount = 0;
-            this.crossMasCount = 0;
         }
 
         public static Crosswords fromInput(String input) {
@@ -35,11 +39,24 @@ public class Day4 extends Day {
         }
 
         public long countXmas() {
-            if (xmasCount == 0) {
-                xmasCount = countHorizontalXmas() + countVerticalXmas() + countTotalDiagonalXmas();
-            }
+            return patternCounts.computeIfAbsent(
+                    Pattern.XMAS, __ -> countHorizontalXmas() + countVerticalXmas() + countDiagonalXmas());
+        }
 
-            return xmasCount;
+        private long countCrossMas() {
+            return patternCounts.computeIfAbsent(Pattern.CROSS_MAS, __ -> {
+                final int windowSize = 3;
+                long count = 0;
+
+                for (int y = 0; y + windowSize <= grid.size(); y++) {
+                    for (int x = 0; x + windowSize <= grid.get(y).size(); x++) {
+                        var window = create2DWindow(x, y, windowSize);
+                        count += isCrossMasInWindow(window) ? 1 : 0;
+                    }
+                }
+
+                return count;
+            });
         }
 
         private long countHorizontalXmas() {
@@ -52,35 +69,43 @@ public class Day4 extends Day {
                     .sum();
         }
 
+        private long countDiagonalXmas() {
+            final int windowSize = 4;
+            long count = 0;
+
+            for (int y = 0; y + windowSize <= grid.size(); y++) {
+                for (int x = 0; x + windowSize <= grid.get(y).size(); x++) {
+                    var window = create2DWindow(x, y, windowSize);
+                    count += countDiagonalXmasInWindow(window);
+                }
+            }
+
+            return count;
+        }
+
+        private List<List<Character>> create2DWindow(int x, int y, int size) {
+            return grid.subList(y, y + size).stream()
+                    .map(line -> line.subList(x, x + size))
+                    .toList();
+        }
+
         private long countXmasInLine(List<Character> line) {
+            List<Character> XMAS = List.of('X', 'M', 'A', 'S');
+            List<Character> SAMX = List.of('S', 'A', 'M', 'X');
+
             return IntStream.range(0, line.size() - 3)
-                    .filter(i -> indexIsHorizontalXmas(line, i))
+                    .mapToObj(i -> line.subList(i, i + 4))
+                    .filter(window -> window.equals(XMAS) || window.equals(SAMX))
                     .count();
         }
 
-        private boolean indexIsHorizontalXmas(List<Character> line, int i) {
-            List<Character> window = line.subList(i, i + 4);
-            List<Character> forwardPattern = List.of('X', 'M', 'A', 'S');
-            List<Character> backwardPattern = List.of('S', 'A', 'M', 'X');
-
-            return window.equals(forwardPattern) || window.equals(backwardPattern);
-        }
-
-        private long countTotalDiagonalXmas() {
-            return IntStream.range(0, grid.size() - 3)
-                    .mapToLong(y -> IntStream.range(0, grid.get(y).size() - 3)
-                            .mapToLong(x -> countDiagonalXmasInWindow(createWindow(x, y, 4)))
-                            .sum())
-                    .sum();
-        }
-
         private long countDiagonalXmasInWindow(List<List<Character>> window) {
-            var fromTopLeft = isDiagonalXmas(window, 0, 0, 1, 1);
-            var fromTopRight = isDiagonalXmas(window, 3, 0, -1, 1);
-            var fromBottomLeft = isDiagonalXmas(window, 0, 3, 1, -1);
-            var fromBottomRight = isDiagonalXmas(window, 3, 3, -1, -1);
+            boolean topLeft = isDiagonalXmas(window, 0, 0, 1, 1);
+            boolean topRight = isDiagonalXmas(window, 3, 0, -1, 1);
+            boolean bottomLeft = isDiagonalXmas(window, 0, 3, 1, -1);
+            boolean bottomRight = isDiagonalXmas(window, 3, 3, -1, -1);
 
-            return Stream.of(fromTopLeft, fromTopRight, fromBottomLeft, fromBottomRight)
+            return Stream.of(topLeft, topRight, bottomLeft, bottomRight)
                     .filter(x -> x)
                     .count();
         }
@@ -100,33 +125,17 @@ public class Day4 extends Day {
             return true;
         }
 
-        private long countCrossMas() {
-            if (crossMasCount == 0) {
-                crossMasCount = IntStream.range(0, grid.size() - 2)
-                        .mapToLong(y -> IntStream.range(0, grid.get(y).size() - 2)
-                                .mapToObj(x -> isCrossMasInWindow(createWindow(x, y, 3)))
-                                .filter(x -> x)
-                                .count())
-                        .sum();
+        private boolean isCrossMasInWindow(List<List<Character>> window) {
+            if (window.get(1).get(1) != 'A') {
+                return false;
             }
 
-            return crossMasCount;
-        }
+            boolean topLeft = window.get(0).get(0) == 'M' && window.get(2).get(2) == 'S';
+            boolean topRight = window.get(2).get(0) == 'S' && window.get(0).get(2) == 'M';
+            boolean bottomLeft = window.get(2).get(0) == 'M' && window.get(0).get(2) == 'S';
+            boolean bottomRight = window.get(0).get(0) == 'S' && window.get(2).get(2) == 'M';
 
-        private List<List<Character>> createWindow(int x, int y, int size) {
-            return grid.subList(y, y + size).stream()
-                    .map(line -> line.subList(x, x + size))
-                    .toList();
-        }
-
-        private boolean isCrossMasInWindow(List<List<Character>> window) {
-            var middleIsA = window.get(1).get(1) == 'A';
-            var fromTopLeft = window.get(0).get(0) == 'M' && window.get(2).get(2) == 'S';
-            var fromBottomRight = window.get(0).get(0) == 'S' && window.get(2).get(2) == 'M';
-            var fromBottomLeft = window.get(2).get(0) == 'M' && window.get(0).get(2) == 'S';
-            var fromTopRight = window.get(2).get(0) == 'S' && window.get(0).get(2) == 'M';
-
-            return middleIsA && (fromTopLeft || fromBottomRight) && (fromTopRight || fromBottomLeft);
+            return (topLeft || bottomRight) && (topRight || bottomLeft);
         }
     }
 }
