@@ -17,7 +17,7 @@ public class InputService {
     }
 
     public String getInput(String day) {
-        return getInput(Normalizer.day(day));
+        return getInput(Normalizer.day(day).toString());
     }
 
     public String getInput(Number dayNumber) {
