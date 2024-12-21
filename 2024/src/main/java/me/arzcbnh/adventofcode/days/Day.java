@@ -3,13 +3,13 @@ package me.arzcbnh.adventofcode.days;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import lombok.experimental.StandardException;
+import me.arzcbnh.adventofcode.utils.Normalizer;
 
 public abstract class Day {
     private String input;
 
     public static Day getSolution(String day, String input) {
-        int normalized = Integer.parseInt(day);
-        return getSolution(normalized, input);
+        return getSolution(Normalizer.day(day), input);
     }
 
     public static Day getSolution(Number day, String input) {
