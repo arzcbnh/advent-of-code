@@ -17,14 +17,20 @@ public class InputService {
     }
 
     public String getInput(String day) {
+        return getInput(Normalizer.day(day));
+    }
+
+    public String getInput(Number dayNumber) {
+        var day = dayNumber.toString();
+
         try {
             return cache.getInput(day);
-        } catch (Exception e) {
-            // Do nothing
+        } catch (IOException e) {
+            // Do nothing, I don't want to nest try-catch statements
         }
 
         try {
-            var input = fetchInput(day);
+            String input = fetchInput(day);
             cache.store(day, input);
             return input;
         } catch (IOException e) {
@@ -42,10 +48,7 @@ public class InputService {
         try {
             var client = HttpClient.newHttpClient();
             var sessionCookie = "session=" + session;
-            var url = new StringBuilder("https://adventofcode.com/2024/day/")
-                    .append(day)
-                    .append("/input")
-                    .toString();
+            var url = "https://adventofcode.com/2024/day/" + day + "/input";
             var request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .header("Cookie", sessionCookie)
@@ -64,21 +67,19 @@ public class InputService {
             throw new InputServiceException("Unable to fetch input, status code: " + response.statusCode());
         }
 
-        var input = response.body();
-
-        return input;
+        return response.body();
     }
 
     private static class Cache {
         private final Path directory;
 
-        Cache() {
+        public Cache() {
             directory = setupDirectory();
         }
 
         private static Path setupDirectory() {
-            var xdg = System.getenv("XDG_CACHE_DIR");
-            var home = System.getProperty("user.home");
+            String xdg = System.getenv("XDG_CACHE_DIR");
+            String home = System.getProperty("user.home");
             Path userCache;
 
             if (xdg != null) {
@@ -87,7 +88,7 @@ public class InputService {
                 userCache = Paths.get(home, ".cache");
             }
 
-            var aocCache = userCache.resolve("arzcbnh-aoc/2024");
+            Path aocCache = userCache.resolve("arzcbnh-aoc/2024");
 
             try {
                 Files.createDirectories(aocCache);
@@ -100,8 +101,7 @@ public class InputService {
 
         public String getInput(String day) throws IOException {
             var inputPath = directory.resolve(day);
-            var input = Files.readString(inputPath);
-            return input;
+            return Files.readString(inputPath);
         }
 
         public void store(String day, String content) throws IOException {
@@ -109,7 +109,7 @@ public class InputService {
             Files.writeString(inputPath, content);
         }
     }
-}
 
-@StandardException
-class InputServiceException extends RuntimeException {}
+    @StandardException
+    public static class InputServiceException extends RuntimeException {}
+}
