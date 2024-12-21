@@ -9,7 +9,7 @@ public abstract class Day {
     private String input;
 
     public static Day getSolution(String day, String input) {
-        return getSolution(Normalizer.day(day).toString(), input);
+        return getSolution(Integer.parseInt(Normalizer.day(day)), input);
     }
 
     public static Day getSolution(Number day, String input) {
