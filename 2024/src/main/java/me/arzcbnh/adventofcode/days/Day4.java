@@ -23,6 +23,11 @@ public class Day4 extends Day {
             CROSS_MAS
         }
 
+        private static final List<Character> XMAS = List.of('X', 'M', 'A', 'S');
+        private static final List<Character> SAMX = XMAS.reversed();
+        private static final List<Character> MAS = List.of('M', 'A', 'S');
+        private static final List<Character> SAM = MAS.reversed();
+
         private final List<List<Character>> grid;
         private final Map<Pattern, Long> patternCounts = new EnumMap<>(Pattern.class);
 
@@ -90,9 +95,6 @@ public class Day4 extends Day {
         }
 
         private long countXmasInLine(List<Character> line) {
-            List<Character> XMAS = List.of('X', 'M', 'A', 'S');
-            List<Character> SAMX = List.of('S', 'A', 'M', 'X');
-
             return IntStream.range(0, line.size() - 3)
                     .mapToObj(i -> line.subList(i, i + 4))
                     .filter(window -> window.equals(XMAS) || window.equals(SAMX))
@@ -100,42 +102,33 @@ public class Day4 extends Day {
         }
 
         private long countDiagonalXmasInWindow(List<List<Character>> window) {
-            boolean topLeft = isDiagonalXmas(window, 0, 0, 1, 1);
-            boolean topRight = isDiagonalXmas(window, 3, 0, -1, 1);
-            boolean bottomLeft = isDiagonalXmas(window, 0, 3, 1, -1);
-            boolean bottomRight = isDiagonalXmas(window, 3, 3, -1, -1);
+            boolean firstDiagonal = isDiagonalXmas(window, 0, 0, false);
+            boolean secondDiagonal = isDiagonalXmas(window, 3, 0, true);
 
-            return Stream.of(topLeft, topRight, bottomLeft, bottomRight)
-                    .filter(x -> x)
-                    .count();
+            return Stream.of(firstDiagonal, secondDiagonal).filter(x -> x).count();
         }
 
-        private boolean isDiagonalXmas(List<List<Character>> window, int fromX, int fromY, int dirX, int dirY) {
-            char[] pattern = {'X', 'M', 'A', 'S'};
+        private boolean isDiagonalXmas(List<List<Character>> window, int fromX, int fromY, boolean invertX) {
+            int factor = invertX ? -1 : 1;
 
-            for (int i = 0; i < pattern.length; i++) {
-                var line = window.get(fromY + i * dirY);
-                var ch = line.get(fromX + i * dirX);
+            List<Character> section = List.of(
+                    window.get(fromY).get(fromX),
+                    window.get(fromY + 1).get(fromX + 1 * factor),
+                    window.get(fromY + 2).get(fromX + 2 * factor),
+                    window.get(fromY + 3).get(fromX + 3 * factor));
 
-                if (ch != pattern[i]) {
-                    return false;
-                }
-            }
-
-            return true;
+            return section.equals(XMAS) || section.equals(SAMX);
         }
 
         private boolean isCrossMasInWindow(List<List<Character>> window) {
-            if (window.get(1).get(1) != 'A') {
-                return false;
-            }
+            List<Character> firstDiagonal = List.of(
+                    window.get(0).get(0), window.get(1).get(1), window.get(2).get(2));
 
-            boolean topLeft = window.get(0).get(0) == 'M' && window.get(2).get(2) == 'S';
-            boolean topRight = window.get(2).get(0) == 'S' && window.get(0).get(2) == 'M';
-            boolean bottomLeft = window.get(2).get(0) == 'M' && window.get(0).get(2) == 'S';
-            boolean bottomRight = window.get(0).get(0) == 'S' && window.get(2).get(2) == 'M';
+            List<Character> secondDiagonal = List.of(
+                    window.get(0).get(2), window.get(1).get(1), window.get(2).get(0));
 
-            return (topLeft || bottomRight) && (topRight || bottomLeft);
+            return (firstDiagonal.equals(MAS) || firstDiagonal.equals(SAM))
+                    && (secondDiagonal.equals(MAS) || secondDiagonal.equals(SAM));
         }
     }
 }
