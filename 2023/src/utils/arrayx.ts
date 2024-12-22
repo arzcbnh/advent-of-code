@@ -1,6 +1,7 @@
 export const equals = Symbol();
 export const group = Symbol();
 export const subarray = Symbol();
+export const sum = Symbol();
 export const transpose = Symbol();
 export const windowed = Symbol();
 export const zip = Symbol();
@@ -10,6 +11,7 @@ declare global {
         [equals]: (arr: T[]) => boolean;
         [group]: (size: number) => T[][];
         [subarray]: (start: number, end?: number) => T[];
+        [sum]: (this: number[]) => number;
         [transpose]: () => T[];
         [windowed]: (size: number) => T[][];
         [zip]: () => T[];
@@ -69,6 +71,10 @@ Array.prototype[subarray] = function (start: number, end?: number) {
     }
 
     return this.slice(start, end);
+};
+
+Array.prototype[sum] = function (this: number[]): number {
+    return this.reduce((acc, num) => acc + num, 0);
 };
 
 Array.prototype[transpose] = function <T>(this: T[][]): T[][] {
