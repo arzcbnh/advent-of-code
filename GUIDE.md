@@ -22,6 +22,10 @@ I personally have a hard time deciding when to use each of the conventional type
 - **\<year>/\<day>**: A specific day.
 - **front**: The front-end.
 
-## Caching
+## Fetching inputs
 
-The session token necessary for fetching must be an environment variable. Inputs will be cached on `$XDG_CACHE_HOME` or `$HOME/.cache`. The cache will be structured as `arzcbnh-aoc/<year>/<day>`, where `<day>` has no leading zeros and no file extension. I still haven't decided how caching will be done on macOS and Windows.
+For every event:
+
+- The session token necessary for fetching must be stored in the environment variable `AOC_SESSION`.
+- The `User-Cache` header must be `github.com/arzcbnh/advent-of-code by 1TzkVCrXPOqfUk0d@gmail.com`.
+- Inputs must be cached first on `$XDG_CACHE_HOME`, or second on `$HOME/.cache`. The cache will be structured as `arzcbnh-aoc/<year>/<day>`, where `<day>` has no leading zeros and no file extension. I still haven't decided how caching will be done on macOS and Windows.
