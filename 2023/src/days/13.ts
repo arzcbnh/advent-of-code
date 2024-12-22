@@ -1,43 +1,34 @@
-import { transpose } from "#root/utils/arrayx.js";
+import { equals, sum, transpose } from "#root/utils/arrayx.js";
 
 enum Material {
     Rock = "#",
     Ash = ".",
 }
 
-enum ReflectionType {
+enum Orientation {
     Horizontal,
     Vertical,
 }
 
 type Reflection = {
-    type: ReflectionType;
+    orientation: Orientation;
     index: number;
 };
 
+type ReflectionChecker = () => {
+    compare: (a: Material[], b: Material[]) => void;
+    result: () => boolean;
+};
+
+type ReflectionPair = { perfect: Reflection; smudgy: Reflection };
 type Landscape = Material[][];
 
-let debug = false
 export function solve(notes: Input): Solution {
     const landscapes = parseLandscapes(notes);
-    const reflections = landscapes.map(findReflection);
-    const withSmudges = landscapes.map((ls, i) => { if (i == 2) debug = true; return findSmudged(ls) });
-    // console.log(reflections);
+    const reflections = landscapes.map(findAllReflections);
 
-    const part1 = reflections.map(reflection => {
-        if (reflection.type === ReflectionType.Horizontal) {
-            return 100 * (reflection.index + 1);
-        } else {
-            return (reflection.index + 1);
-        }
-    }).reduce((acc, num) => acc + num, 0);
-    const part2 = withSmudges.map(reflection => {
-        if (reflection.type === ReflectionType.Horizontal) {
-            return 100 * (reflection.index + 1);
-        } else {
-            return (reflection.index + 1);
-        }
-    }).reduce((acc, num) => acc + num, 0);
+    const part1 = reflections.map(summarizeType("perfect"))[sum]();
+    const part2 = reflections.map(summarizeType("smudgy"))[sum]();
 
     return { part1, part2 };
 }
@@ -45,173 +36,87 @@ export function solve(notes: Input): Solution {
 function parseLandscapes(notes: string): Landscape[] {
     const blocks = notes.split("\n\n");
     const landscapes = blocks.map(block => block.split("\n").map(line => line.split("")));
-    // landscapes.forEach(landscape => { console.log(landscape); console.log("\n")});
 
     if (!isLandscapeArray(landscapes)) {
-        throw new Error();
+        throw new Error("Invalid input");
     }
 
     return landscapes;
 }
 
 function isLandscapeArray(landscapes: string[][][]): landscapes is Landscape[] {
-    return landscapes.every(landscape => landscape.every(line => line.every(char => char === "#" || char === ".")));
+    return landscapes.every(ls => ls.every(line => line.every(char => char === "#" || char === ".")));
 }
 
-function findReflection(landscape: Landscape): Reflection {
-    let type: ReflectionType;
-    let x: number;
-    let y: number;
+function findAllReflections(landscape: Landscape): ReflectionPair {
+    const perfect = findReflectionInAnyOrientation(landscape, isPerfectReflection);
+    const smudgy = findReflectionInAnyOrientation(landscape, isSmudgyReflection);
 
-    for (y = 0; y < landscape.length - 1; y++) {
-            if (isHorizontalReflection(landscape, y)) {
-                return { type: ReflectionType.Horizontal, index: y };
-            }
+    return { perfect, smudgy };
+}
+
+function findReflectionInAnyOrientation(landscape: Landscape, checker: ReflectionChecker): Reflection {
+    const reflection =
+        findReflection(landscape, checker, Orientation.Horizontal) ??
+        findReflection(landscape, checker, Orientation.Vertical);
+
+    if (reflection == null) {
+        throw new Error(
+            "Could not find reflections in landscape, there must be at least one perfect and one smudgy reflection"
+        );
     }
 
-        for (x = 0; x < landscape[y].length - 1; x++) {
-            if (isVerticalReflection(landscape, x)) {
-                return { type: ReflectionType.Vertical, index: x };
-            }
-        }
+    return reflection;
 }
 
-function findSmudged(landscape: Landscape): Reflection {
-    let type: ReflectionType;
-    let x: number;
-    let y: number;
-
-    for (y = 0; y < landscape.length - 1; y++) {
-            if (isSmudgyHorizontalReflection(landscape, y)) {
-                return { type: ReflectionType.Horizontal, index: y };
-            }
+function findReflection(landscape: Landscape, checker: ReflectionChecker, orientation: Orientation): Reflection | null {
+    if (orientation === Orientation.Vertical) {
+        landscape = landscape[transpose]();
     }
 
-        for (x = 0; x < landscape[y].length - 1; x++) {
-            if (isSmudgyVerticalReflection(landscape, x)) {
-                return { type: ReflectionType.Vertical, index: x };
-            }
-        }
-
-    console.log(landscape.map(line => line.join("")).join("\n"));
-    process.exit();
-}
-
-// let count = 0
-function isHorizontalReflection(landscape: Landscape, y: number): boolean {
-    const precedingLines = landscape.slice(0, y + 1).reverse();
-    const succeedingLines = landscape.slice(y + 1);
-
-    // if (y === 3 && count++ === 1) {
-    //     console.log(precedingLines);
-    //     console.log(succeedingLines)
-    // }
-
-    for (let i = 0; i < precedingLines.length && i < succeedingLines.length; i++) {
-        const preceding = precedingLines[i];
-        const succeeding = succeedingLines[i];
-
-        if (preceding == null || succeeding == null) {
-            break;
-        }
-
-        if (preceding.some((_, j) => preceding[j] !== succeeding[j])) {
-            return false;
+    for (let i = 0; i < landscape.length - 1; i++) {
+        if (isReflectionType(landscape, i, checker)) {
+            return { orientation, index: i };
         }
     }
 
-    return true;
+    return null;
 }
 
-function isVerticalReflection(landscape: Landscape, x: number): boolean {
-    landscape = landscape[transpose]();
-    const precedingLines = landscape.slice(0, x + 1).reverse();
-    const succeedingLines = landscape.slice(x + 1);
+function isReflectionType(landscape: Landscape, idx: number, checker: ReflectionChecker): boolean {
+    const preceding = landscape.slice(0, idx + 1).reverse();
+    const succeeding = landscape.slice(idx + 1);
+    const { compare, result } = checker();
 
-    for (let i = 0; i < precedingLines.length && i < succeedingLines.length; i++) {
-        const preceding = precedingLines[i];
-        const succeeding = succeedingLines[i];
-
-        if (preceding == null || succeeding == null) {
-            break;
-        }
-
-        if (preceding.some((_, j) => preceding[j] !== succeeding[j])) {
-            return false;
-        }
+    for (let i = 0; i < preceding.length && i < succeeding.length; i++) {
+        compare(preceding[i], succeeding[i]);
     }
 
-    return true;
+    return result();
 }
 
+function isPerfectReflection(): ReturnType<ReflectionChecker> {
+    let status = true;
 
-function isSmudgyHorizontalReflection(landscape: Landscape, y: number): boolean {
-    const precedingLines = landscape.slice(0, y + 1).reverse();
-    const succeedingLines = landscape.slice(y + 1);
+    const result = () => status;
+    const compare = (line1: Material[], line2: Material[]) => {
+        status = status && line1[equals](line2);
+    };
+
+    return { result, compare };
+}
+
+function isSmudgyReflection(): ReturnType<ReflectionChecker> {
     let smudges = 0;
 
-    if (y == 2) {
-        // console.log(precedingLines)
-        // console.log(succeedingLines)
-    }
+    const result = () => smudges === 1;
+    const compare = (line1: Material[], line2: Material[]) => {
+        smudges += line1.reduce((diff, val, i) => diff + Number(val != line2[i]), 0);
+    };
 
-    for (let i = 0; i < precedingLines.length && i < succeedingLines.length; i++) {
-        const preceding = precedingLines[i];
-        const succeeding = succeedingLines[i];
-
-        if (preceding == null || succeeding == null) {
-            break;
-        }
-
-        smudges += preceding.reduce((acc, _, j) => {
-            // if (y == 2 && i == 2) {
-            //     console.log(preceding);
-            //     console.log(succeeding)
-            // }
-            return Number(preceding[j] != succeeding[j]) + acc
-        }, 0);
-    }
-
-    if (y == 2) {
-        // console.log(smudges);
-        // console.log(precedingLines[2]);
-        // console.log(succeedingLines[2]);
-        // console.log(precedingLines[2][0] != succeedingLines[2][0])
-        // process.exit()
-    }
-
-    return smudges == 1;
+    return { result, compare };
 }
 
-function isSmudgyVerticalReflection(landscape: Landscape, y: number): boolean {
-    landscape = landscape[transpose]();
-    const precedingLines = landscape.slice(0, y + 1).reverse();
-    const succeedingLines = landscape.slice(y + 1);
-    let smudges = 0;
-
-    for (let i = 0; i < precedingLines.length && i < succeedingLines.length; i++) {
-        const preceding = precedingLines[i];
-        const succeeding = succeedingLines[i];
-
-        if (preceding == null || succeeding == null) {
-            break;
-        }
-
-        smudges += preceding.reduce((acc, _, j) => {
-            // if (y == 2 && i == 2) {
-            //     console.log(preceding);
-            //     console.log(succeeding)
-            // }
-            return Number(preceding[j] != succeeding[j]) + acc
-        }, 0);
-    }
-
-    // if (debug == true && y == 7) {
-    //     // console.log(precedingLines);
-    //     // console.log(succeedingLines)
-    //     console.log(smudges);
-    //     process.exit()
-    // }
-
-    return smudges == 1;
+function summarizeType(type: keyof ReflectionPair): (pair: ReflectionPair) => number {
+    return pair => (pair[type].orientation === Orientation.Horizontal ? 100 : 1) * (pair[type].index + 1);
 }
