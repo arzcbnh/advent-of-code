@@ -1,5 +1,6 @@
 export const group = Symbol();
 export const subarray = Symbol();
+export const transpose = Symbol();
 export const windowed = Symbol();
 export const zip = Symbol();
 
@@ -7,6 +8,7 @@ declare global {
     interface Array<T> {
         [group]: (size: number) => T[][];
         [subarray]: (start: number, end?: number) => T[];
+        [transpose]: () => T[];
         [windowed]: (size: number) => T[][];
         [zip]: () => T[];
     }
@@ -52,6 +54,30 @@ Array.prototype[subarray] = function (start: number, end?: number) {
 
     return this.slice(start, end);
 };
+
+Array.prototype[transpose] = function <T>(this: T[][]): T[][] {
+    if (this.length === 0) {
+        return [];
+    }
+
+    const isEveryRowSameLength = this.every(row => row.length === this[0].length);
+
+    if (!isEveryRowSameLength) {
+        throw new Error();
+    }
+
+    const collen = this.length;
+    const rowlen = this[0].length;
+    const transposed = Array.from({ length: rowlen }, () => Array(collen));
+
+    for (let j = 0; j < rowlen; j++) {
+        for (let i = 0; i < collen; i++) {
+            transposed[j][i] = this[i][j];
+        }
+    }
+
+    return transposed;
+}
 
 /**
  * Returns a list of subarrays of the given size sliding along the given array.
