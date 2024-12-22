@@ -1,3 +1,4 @@
+export const equals = Symbol();
 export const group = Symbol();
 export const subarray = Symbol();
 export const transpose = Symbol();
@@ -6,6 +7,7 @@ export const zip = Symbol();
 
 declare global {
     interface Array<T> {
+        [equals]: (arr: T[]) => boolean;
         [group]: (size: number) => T[][];
         [subarray]: (start: number, end?: number) => T[];
         [transpose]: () => T[];
@@ -13,6 +15,20 @@ declare global {
         [zip]: () => T[];
     }
 }
+
+Array.prototype[equals] = function <T>(this: T[], other: T[]): boolean {
+    if (this.length !== other.length) {
+        return false;
+    }
+
+    for (let i = 0; i < this.length; i++) {
+        if (this[i] !== other[i]) {
+            return false;
+        }
+    }
+
+    return true;
+};
 
 /**
  * Splits the array into groups. Throws an error if the array can't be evenly
@@ -77,7 +93,7 @@ Array.prototype[transpose] = function <T>(this: T[][]): T[][] {
     }
 
     return transposed;
-}
+};
 
 /**
  * Returns a list of subarrays of the given size sliding along the given array.
