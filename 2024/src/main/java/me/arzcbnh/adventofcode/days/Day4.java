@@ -47,14 +47,8 @@ public class Day4 extends Day {
 
         private long countCrossMas() {
             if (crossMasCount == 0) {
-                final int windowSize = 3;
-
-                for (int y = 0; y + windowSize <= grid.size(); y++) {
-                    for (int x = 0; x + windowSize <= grid.get(y).size(); x++) {
-                        var window = create2DWindow(x, y, windowSize);
-                        crossMasCount += isCrossMasInWindow(window) ? 1 : 0;
-                    }
-                }
+                var windows = streamWindows(3);
+                crossMasCount = windows.map(this::isCrossMas).filter(x -> x).count();
             }
 
             return crossMasCount;
@@ -71,17 +65,20 @@ public class Day4 extends Day {
         }
 
         private long countDiagonalXmas() {
-            final int windowSize = 4;
-            long count = 0;
+            var windows = streamWindows(4);
+            return windows.mapToLong(this::countDiagonalXmasInWindow).sum();
+        }
+
+        private Stream<List<List<Character>>> streamWindows(int windowSize) {
+            Stream.Builder<List<List<Character>>> builder = Stream.builder();
 
             for (int y = 0; y + windowSize <= grid.size(); y++) {
                 for (int x = 0; x + windowSize <= grid.get(y).size(); x++) {
-                    var window = create2DWindow(x, y, windowSize);
-                    count += countDiagonalXmasInWindow(window);
+                    builder.add(create2DWindow(x, y, windowSize));
                 }
             }
 
-            return count;
+            return builder.build();
         }
 
         private List<List<Character>> create2DWindow(int x, int y, int size) {
@@ -116,7 +113,7 @@ public class Day4 extends Day {
             return section.equals(XMAS) || section.equals(SAMX);
         }
 
-        private boolean isCrossMasInWindow(List<List<Character>> window) {
+        private boolean isCrossMas(List<List<Character>> window) {
             List<Character> firstDiagonal = List.of(
                     window.get(0).get(0), window.get(1).get(1), window.get(2).get(2));
 
