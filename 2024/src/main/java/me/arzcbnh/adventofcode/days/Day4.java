@@ -1,8 +1,6 @@
 package me.arzcbnh.adventofcode.days;
 
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import me.arzcbnh.adventofcode.utils.Listx;
@@ -18,18 +16,14 @@ public class Day4 extends Day {
     }
 
     private static class Crosswords {
-        private enum Pattern {
-            XMAS,
-            CROSS_MAS
-        }
-
         private static final List<Character> XMAS = List.of('X', 'M', 'A', 'S');
         private static final List<Character> SAMX = XMAS.reversed();
         private static final List<Character> MAS = List.of('M', 'A', 'S');
         private static final List<Character> SAM = MAS.reversed();
 
         private final List<List<Character>> grid;
-        private final Map<Pattern, Long> patternCounts = new EnumMap<>(Pattern.class);
+        private long xmasCount;
+        private long crossMasCount;
 
         private Crosswords(List<List<Character>> grid) {
             this.grid = grid;
@@ -44,24 +38,26 @@ public class Day4 extends Day {
         }
 
         public long countXmas() {
-            return patternCounts.computeIfAbsent(
-                    Pattern.XMAS, __ -> countHorizontalXmas() + countVerticalXmas() + countDiagonalXmas());
+            if (xmasCount == 0) {
+                xmasCount = countHorizontalXmas() + countVerticalXmas() + countDiagonalXmas();
+            }
+
+            return xmasCount;
         }
 
         private long countCrossMas() {
-            return patternCounts.computeIfAbsent(Pattern.CROSS_MAS, __ -> {
+            if (crossMasCount == 0) {
                 final int windowSize = 3;
-                long count = 0;
 
                 for (int y = 0; y + windowSize <= grid.size(); y++) {
                     for (int x = 0; x + windowSize <= grid.get(y).size(); x++) {
                         var window = create2DWindow(x, y, windowSize);
-                        count += isCrossMasInWindow(window) ? 1 : 0;
+                        crossMasCount += isCrossMasInWindow(window) ? 1 : 0;
                     }
                 }
+            }
 
-                return count;
-            });
+            return crossMasCount;
         }
 
         private long countHorizontalXmas() {
