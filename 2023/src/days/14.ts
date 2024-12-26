@@ -1,12 +1,5 @@
 import { sum } from "#root/utils/arrayx.js";
 
-enum Direction {
-    North,
-    South,
-    East,
-    West,
-}
-
 enum Rock {
     Round = "O",
     Cube = "#",
@@ -14,49 +7,57 @@ enum Rock {
 }
 
 type Platform = Rock[][];
+type Direction = "north" | "south" | "east" | "west";
 
-function print(plat: Platform) {
-    plat.forEach(line => console.log(line.join("")));
-    console.log();
-}
+type TraversalOrder = {
+    start: (len: number) => number;
+    end: (len: number) => number;
+    increment: 1 | -1;
+};
+
+type RockMovement = {
+    getStartPosition: (x: number, y: number) => number;
+    canMoveNext: (platform: Platform, x: number, y: number, curr: number) => boolean;
+    placeRock: (platform: Platform, x: number, y: number, final: number) => void;
+};
+
+type OperationSet = {
+    rowStart: (plat: Platform) => number;
+    rowCheck: (plat: Platform, y: number) => boolean;
+    rowIncrement: (y: number) => number;
+
+    columnStart: (plat: Platform) => number;
+    columnCheck: (plat: Platform, x: number) => boolean;
+    columnIncrement: (x: number) => number;
+
+    iterStart: (x: number, y: number) => number;
+    iterCheck: (plat: Platform, x: number, y: number, curr: number) => boolean;
+    iterIncrement: (curr: number) => number;
+
+    placeRock: (plat: Platform, x: number, y: number, final: number) => void;
+};
+
+const OPERATION_SETS = {
+    north: generateOperationSet("north"),
+    south: generateOperationSet("south"),
+    west: generateOperationSet("west"),
+    east: generateOperationSet("east"),
+} as const;
 
 export function solve(note: Input): Solution {
     const platform = parsePlatform(note);
 
-    const rolledNorth = rollStones(platform.map(row => row.map(rock => rock)), Direction.North);
+    const rolledNorth = clonePlatform(platform);
+    const cycledBillion = clonePlatform(platform);
+    const billionthCycle = detectBillionthCycleEquivalent(platform);
+
+    rollStones(rolledNorth, OPERATION_SETS.north);
+    for (let i = 0; i < billionthCycle; i++) {
+        rollCycle(cycledBillion);
+    }
+
     const part1 = calcTotalLoad(rolledNorth);
-
-    let tortoise = platform.map(row => row.map(rock => rock));
-    let hare = platform.map(row => row.map(rock => rock));
-    
-    do {
-        rollCycle(tortoise);
-        rollCycle(hare);
-        rollCycle(hare);
-    } while (tortoise.map(row => row.join()).join() != hare.map(row => row.join()).join())
-
-    tortoise = platform.map(row => row.map(rock => rock));
-    let cycleStart = 0;
-
-    while (tortoise.map(row => row.join()).join() != hare.map(row => row.join()).join()) {
-        rollCycle(tortoise);
-        rollCycle(hare);
-        cycleStart++;
-    }
-
-    let cycleLength = 0;
-    hare = tortoise.map(row => row.map(rock => rock));
-
-    do {
-        rollCycle(hare);
-        cycleLength++;
-    } while (tortoise.map(row => row.join()).join() != hare.map(row => row.join()).join())
-
-    for (let i = 0; i < cycleStart + (1e9 - cycleStart) % cycleLength; i++) {
-        rollCycle(platform);
-    }
-
-    const part2 = calcTotalLoad(platform);
+    const part2 = calcTotalLoad(cycledBillion);
 
     return { part1, part2 };
 }
@@ -71,180 +72,153 @@ function parsePlatform(note: string): Platform {
 function assertPlatform(parsed: string[][]): asserts parsed is Platform {
     const expected = Object.values<string>(Rock);
 
-    for (let y = 0; y < parsed.length; y++) {
-        for (let x = 0; x < parsed[y].length; x++) {
-            const char = parsed[y][x];
+    parsed.forEach((row, y) => row.forEach((char, x) => {
+        if (!expected.includes(char)) {
+            throw new Error(`Invalid character '${char}' at row ${y}, column ${x}`);
+        }
+    }));
+}
 
-            if (!expected.includes(char)) {
-                throw new Error(`Invalid character '${char}' at row ${y}, column ${x}`);
+function rollStones(platform: Platform, op: OperationSet): void {
+    for (let y = op.rowStart(platform); op.rowCheck(platform, y); y = op.rowIncrement(y)) {
+        for (let x = op.columnStart(platform); op.columnCheck(platform, x); x = op.columnIncrement(x)) {
+            if (platform[y][x] !== Rock.Round) {
+                continue;
             }
+
+            let i;
+            platform[y][x] = Rock.None;
+
+            for (i = op.iterStart(x, y); op.iterCheck(platform, x, y, i); i = op.iterIncrement(i));
+            op.placeRock(platform, x, y, i);
         }
     }
 }
 
-function rollStonesNorth(platform: Platform): Platform {
-    const rolled = [];
+function createTraversalOrder(dir: Direction): { row: TraversalOrder; column: TraversalOrder } {
+    const defaultOrder = {
+        start: () => 0,
+        end: length => length,
+        increment: 1,
+    } satisfies TraversalOrder;
 
-    for (const row of platform) {
-        rolled.push(Array.from(row));
+    const reverseOrder = {
+        start: length => length - 1,
+        end: () => -1,
+        increment: -1,
+    } satisfies TraversalOrder;
 
-        for (let y = 0; y < rolled.length; y++) {
-            for (let x = 0; x < rolled[y].length; x++) {
-                if (rolled[y][x] != Rock.Round) {
-                    continue;
-                }
-
-                rolled[y][x] = Rock.None;
-                let n;
-
-                for (n = y; n > 0 && rolled[n - 1][x] === Rock.None; n--);
-
-                rolled[n][x] = Rock.Round;
-            }
-        }
+    switch (dir) {
+        case "north":
+        case "south":
+            return {
+                row: dir === "north" ? defaultOrder : reverseOrder,
+                column: defaultOrder,
+            };
+        case "west":
+        case "east":
+            return {
+                row: defaultOrder,
+                column: dir === "west" ? defaultOrder : reverseOrder,
+            };
     }
-
-
-    return rolled;
 }
 
-function rollStonesCycle(platform: Platform): Platform {
-    const rolled = platform.map(row => row.map(rock => rock));
-
-    // north
-    for (let y = 0; y < rolled.length; y++) {
-        for (let x = 0; x < rolled[y].length; x++) {
-            if (rolled[y][x] != Rock.Round) {
-                continue;
-            }
-
-            rolled[y][x] = Rock.None;
-            let n;
-
-            for (n = y; n > 0 && rolled[n - 1] && rolled[n - 1][x] === Rock.None; n--);
-            rolled[n][x] = Rock.Round;
-        }
+function createRockMovement(dir: Direction): RockMovement {
+    switch (dir) {
+        case "north":
+            return {
+                getStartPosition: (_x, y) => y,
+                canMoveNext: (plat, x, _y, i) => i > 0 && plat[i - 1][x] === Rock.None,
+                placeRock: (plat, x, _y, i) => (plat[i][x] = Rock.Round),
+            };
+        case "south":
+            return {
+                getStartPosition: (_x, y) => y,
+                canMoveNext: (plat, x, _y, i) => i < plat.length - 1 && plat[i + 1][x] === Rock.None,
+                placeRock: (plat, x, _y, i) => (plat[i][x] = Rock.Round),
+            };
+        case "west":
+            return {
+                getStartPosition: (x, _y) => x,
+                canMoveNext: (plat, _x, y, i) => i > 0 && plat[y][i - 1] === Rock.None,
+                placeRock: (plat, _x, y, i) => (plat[y][i] = Rock.Round),
+            };
+        case "east":
+            return {
+                getStartPosition: (x, _y) => x,
+                canMoveNext: (plat, _x, y, i) => i < plat[y].length - 1 && plat[y][i + 1] === Rock.None,
+                placeRock: (plat, _x, y, i) => (plat[y][i] = Rock.Round),
+            };
     }
-    print(rolled);
-
-    // west
-    for (let y = 0; y < rolled.length; y++) {
-        for (let x = 0; x < rolled[y].length; x++) {
-            if (rolled[y][x] != Rock.Round) {
-                continue;
-            }
-
-            rolled[y][x] = Rock.None;
-            let n;
-
-            for (n = x; n > 0 && rolled[y][n - 1] === Rock.None; n--);
-            rolled[y][n] = Rock.Round;
-        }
-    }
-    print(rolled);
-    
-    // south
-    for (let y = rolled.length - 1; y >= 0; y--) {
-        for (let x = 0; x < rolled[y].length; x++) {
-            if (rolled[y][x] != Rock.Round) {
-                continue;
-            }
-
-            rolled[y][x] = Rock.None;
-            let n;
-
-            for (n = y; n < rolled.length && rolled[n + 1] && rolled[n + 1][x] === Rock.None; n++);
-            rolled[n][x] = Rock.Round;
-        }
-    }
-    print(rolled);
-
-    // east
-    for (let y = 0; y < rolled.length; y++) {
-        for (let x = rolled[y].length - 1; x >= 0; x--) {
-            if (rolled[y][x] != Rock.Round) {
-                continue;
-            }
-
-            rolled[y][x] = Rock.None;
-            let n;
-
-            for (n = x; n < rolled[y].length && rolled[y][n + 1] === Rock.None; n++);
-            rolled[y][n] = Rock.Round;
-        }
-    }
-    print(rolled);
-
-    return rolled;
 }
 
-function iter(rolled: Platform, fn: (x: number, y: number) => void) {
-    for (let y = 0; y < rolled.length; y++) {
-        for (let x = rolled[y].length - 1; x >= 0; x--) {
-            if (rolled[y][x] != Rock.Round) {
-                continue;
-            }
+function generateOperationSet(dir: Direction): OperationSet {
+    const traversal = createTraversalOrder(dir);
+    const movement = createRockMovement(dir);
 
-            rolled[y][x] = Rock.None;
-            fn(x, y);
-        }
+    return {
+        rowStart: plat => traversal.row.start(plat.length),
+        rowCheck: (plat, y) => y !== traversal.row.end(plat.length),
+        rowIncrement: y => y + traversal.row.increment,
+
+        columnStart: plat => traversal.column.start(plat.length),
+        columnCheck: (plat, x) => x !== traversal.column.end(plat.length),
+        columnIncrement: x => x + traversal.column.increment,
+
+        iterStart: movement.getStartPosition,
+        iterCheck: movement.canMoveNext,
+        iterIncrement: dir === "north" || dir === "west" ? i => i - 1 : i => i + 1,
+        placeRock: movement.placeRock,
+    };
+}
+
+function rollCycle(platform: Platform): void {
+    rollStones(platform, OPERATION_SETS.north);
+    rollStones(platform, OPERATION_SETS.west);
+    rollStones(platform, OPERATION_SETS.south);
+    rollStones(platform, OPERATION_SETS.east);
+}
+
+function detectBillionthCycleEquivalent(platform: Platform): number {
+    let tortoise = clonePlatform(platform);
+    let hare = clonePlatform(platform);
+    let length = 1;
+    let start = 0;
+
+    do {
+        rollCycle(tortoise);
+        rollCycle(hare);
+        rollCycle(hare);
+    } while (!equalsPlatform(tortoise, hare));
+
+    for (tortoise = clonePlatform(platform); !equalsPlatform(tortoise, hare); start++) {
+        rollCycle(tortoise);
+        rollCycle(hare);
     }
-    // print(rolled);
-}
 
-function rollStones(platform: Platform, dir: Direction): Platform {
-    let x: number, y: number, i: number;
+    hare = clonePlatform(tortoise);
+    for (rollCycle(hare); !equalsPlatform(tortoise, hare); length++) {
+        rollCycle(hare);
+    }
 
-    const rowStart = dir == Direction.South ? platform.length - 1 : 0;
-    const rowCheck = dir != Direction.South ? () => y < platform.length : () => y >= 0;
-    const rowIncrement = dir == Direction.South ? () => y-- : () => y++;
-
-    const columnStart = dir == Direction.East ? platform[0].length - 1 : 0;
-    const columnCheck = dir != Direction.East ? () => x < platform[0].length : () => x >= 0;
-    const columnIncrement = dir == Direction.East ? () => x-- : () => x++;
-
-    const iterStart = dir == Direction.North || dir == Direction.South ? () => y : () => x;
-    const iterCheck = dir == Direction.North ? () => i > 0 && platform[i - 1] && platform[i - 1][x] == Rock.None :
-        dir == Direction.South ? () => i < platform.length && platform[i + 1] && platform[i + 1][x] == Rock.None :
-        dir == Direction.West ? () => i > 0 && platform[y][i - 1] == Rock.None :
-                        () => i < platform[0].length && platform[y][i + 1] == Rock.None;
-    const iterIncrement = dir == Direction.North || dir == Direction.West ? () => i-- : () => i++;
-    const setter = dir == Direction.North || dir == Direction.South ?
-        () => platform[i][x] = Rock.Round : () => platform[y][i] = Rock.Round;
-    // const rolled = [];
-
-    // for (const row of platform) {
-    // rolled.push(Array.from(row));
-
-        for (y = rowStart; rowCheck(); rowIncrement()) {
-            for (x = columnStart; columnCheck(); columnIncrement()) {
-                if (platform[y][x] != Rock.Round) {
-                    continue;
-                }
-
-                platform[y][x] = Rock.None;
-                for (i = iterStart(); iterCheck(); iterIncrement());
-                setter();
-                // console.log(x, y, i);
-                // print(platform);
-            }
-        }
-        // print(platform)
-    // }
-
-
-    return platform;
-}
-
-function rollCycle(platform: Platform): Platform {
-    rollStones(platform, Direction.North);
-    rollStones(platform, Direction.West);
-    rollStones(platform, Direction.South);
-    rollStones(platform, Direction.East);
-
-    return platform;
+    const target = 1e9;
+    const remaining = (target - start) % length;
+    return start + remaining;
 }
 
 function calcTotalLoad(platform: Platform): number {
     return platform.map((row, y) => (platform.length - y) * row.filter(rock => rock === Rock.Round).length)[sum]();
+}
+
+function clonePlatform(plat: Platform): Platform {
+    return plat.map(row => row.map(rock => rock));
+}
+
+function equalsPlatform(a: Platform, b: Platform): boolean {
+    return joinPlatform(a) === joinPlatform(b);
+}
+
+function joinPlatform(plat: Platform): string {
+    return plat.map(row => row.join("")).join("");
 }
