@@ -72,11 +72,13 @@ function parsePlatform(note: string): Platform {
 function assertPlatform(parsed: string[][]): asserts parsed is Platform {
     const expected = Object.values<string>(Rock);
 
-    parsed.forEach((row, y) => row.forEach((char, x) => {
-        if (!expected.includes(char)) {
-            throw new Error(`Invalid character '${char}' at row ${y}, column ${x}`);
-        }
-    }));
+    parsed.forEach((row, y) =>
+        row.forEach((char, x) => {
+            if (!expected.includes(char)) {
+                throw new Error(`Invalid character '${char}' at row ${y}, column ${x}`);
+            }
+        })
+    );
 }
 
 function rollStones(platform: Platform, op: OperationSet): void {
