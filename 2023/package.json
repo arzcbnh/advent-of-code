@@ -6,6 +6,7 @@
         "dev": "tsx src/cli.js",
         "format": "prettier . --write | grep -v 'unchanged'",
         "lint": "eslint .",
+        "start": "node build/cli.js",
         "test": "tsx tests/test.ts"
     },
     "devDependencies": {
