@@ -10,6 +10,7 @@ export default [
             "no-empty": ["error", { allowEmptyCatch: true }],
             "@typescript-eslint/no-non-null-assertion": "error",
             "@typescript-eslint/consistent-type-assertions": ["error", { assertionStyle: "never" }],
+            "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
         },
     },
     { languageOptions: { globals: { ...globals.node } } },
