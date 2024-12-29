@@ -2,18 +2,31 @@ package me.arzcbnh.adventofcode;
 
 import me.arzcbnh.adventofcode.days.Answer;
 import me.arzcbnh.adventofcode.days.Day;
-import me.arzcbnh.adventofcode.utils.InputService;
+import me.arzcbnh.adventofcode.input.Cache;
+import me.arzcbnh.adventofcode.input.CacheService;
+import me.arzcbnh.adventofcode.input.InputProvider;
+import me.arzcbnh.adventofcode.input.InputService;
 import me.arzcbnh.adventofcode.utils.Normalizer;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 public class AdventOfCode {
-    private static InputService inputService = new InputService();
+    private static final InputProvider inputProvider;
+
+    static {
+        Path cacheDirectory = setupCacheDirectory();
+        Cache cacheService = new CacheService(cacheDirectory);
+        inputProvider = new InputService(cacheService);
+    }
 
     public static void main(String[] args) {
         String day = Normalizer.day(args[0]);
@@ -29,7 +42,7 @@ public class AdventOfCode {
                 throw e;
             }
         } catch (Exception e) {
-            input = inputService.getInput(day);
+            input = inputProvider.getInput(Integer.parseInt(day));
         }
 
         var answer = solveDay(Integer.parseInt(day), input);
@@ -57,5 +70,27 @@ public class AdventOfCode {
         } catch (InvocationTargetException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static Path setupCacheDirectory() {
+        String xdg = System.getenv("XDG_CACHE_DIR");
+        String home = System.getProperty("user.home");
+        Path userCache;
+
+        if (xdg != null) {
+            userCache = Paths.get(xdg);
+        } else {
+            userCache = Paths.get(home, ".cache");
+        }
+
+        Path aocCache = userCache.resolve("arzcbnh-aoc/2024");
+
+        try {
+            Files.createDirectories(aocCache);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to setup Advent of Code 2024 cache directory", e);
+        }
+
+        return aocCache;
     }
 }
