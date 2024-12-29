@@ -3,7 +3,7 @@ package me.arzcbnh.adventofcode.days;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Day1 extends Day {
+public final class Day1 extends Day {
     public Answer solve() {
         var lists = parseInput(getInput());
         List<Integer> locations1 = lists.get(0);

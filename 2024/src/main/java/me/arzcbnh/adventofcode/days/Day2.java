@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class Day2 extends Day {
+public final class Day2 extends Day {
     private static class LevelSequence {
         private final List<Integer> levels;
         private final ValidationResult validationResult;

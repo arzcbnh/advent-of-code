@@ -2,7 +2,7 @@ package me.arzcbnh.adventofcode.days;
 
 import java.util.regex.*;
 
-public class Day3 extends Day {
+public final class Day3 extends Day {
     private static final String DO_COMMAND = "do()";
     private static final String DONT_COMMAND = "don't()";
 

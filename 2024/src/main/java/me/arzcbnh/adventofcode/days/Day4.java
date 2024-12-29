@@ -5,7 +5,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import me.arzcbnh.adventofcode.utils.Listx;
 
-public class Day4 extends Day {
+public final class Day4 extends Day {
     public Answer solve() {
         var crosswords = Crosswords.fromInput(getInput());
 

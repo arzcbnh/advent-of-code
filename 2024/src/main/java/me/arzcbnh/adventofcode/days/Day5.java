@@ -3,7 +3,7 @@ package me.arzcbnh.adventofcode.days;
 import java.util.*;
 import java.util.stream.IntStream;
 
-public class Day5 extends Day {
+public final class Day5 extends Day {
     private record RuleMap(Map<Integer, List<Integer>> rules) {
         public static RuleMap fromSerials(List<String> serials) {
             Map<Integer, List<Integer>> rules = new HashMap<>();
