@@ -79,8 +79,8 @@ public final class Day5 extends Day {
         }
     }
 
-    public Answer solve() {
-        var sections = Sections.fromInput(getInput());
+    public Answer solve(String input) {
+        var sections = Sections.fromInput(input);
         var rules = RuleMap.fromSerials(sections.serials);
         var updates = Updates.fromAllUpdates(sections.updates, rules);
 

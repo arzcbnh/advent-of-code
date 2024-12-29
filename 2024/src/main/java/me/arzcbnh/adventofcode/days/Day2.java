@@ -61,8 +61,8 @@ public final class Day2 extends Day {
         }
     }
 
-    public Answer solve() {
-        var reports = parseInput();
+    public Answer solve(String input) {
+        var reports = parseInput(input);
 
         var part1 = reports.stream().filter(LevelSequence::isSafeWithoutModule).count();
         var part2 = reports.stream().filter(LevelSequence::isSafeWithModule).count();
@@ -70,8 +70,8 @@ public final class Day2 extends Day {
         return new Answer(part1, part2);
     }
 
-    private List<LevelSequence> parseInput() {
-        List<LevelSequence> reports = getInput()
+    private List<LevelSequence> parseInput(String input) {
+        List<LevelSequence> reports = input
                 .lines()
                 .map(line ->
                         Arrays.stream(line.split(" ")).map(Integer::parseInt).toList())

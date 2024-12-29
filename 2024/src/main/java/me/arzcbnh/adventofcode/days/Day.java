@@ -6,19 +6,16 @@ import lombok.experimental.StandardException;
 import me.arzcbnh.adventofcode.utils.Normalizer;
 
 public abstract class Day {
-    private String input;
-
-    public static Day getSolution(String day, String input) {
-        return getSolution(Integer.parseInt(Normalizer.day(day)), input);
+    public static Day getSolution(String day) {
+        return getSolution(Integer.parseInt(Normalizer.day(day)));
     }
 
-    public static Day getSolution(Number day, String input) {
+    public static Day getSolution(Number day) {
         try {
             String className = "me.arzcbnh.adventofcode.days.Day" + day;
             Class<?> dayClass = Class.forName(className);
             Constructor<?> constructor = dayClass.getConstructor();
             Day instance = (Day) constructor.newInstance();
-            instance.setInput(input);
             return instance;
         } catch (ClassNotFoundException e) {
             throw new IllegalArgumentException("Day " + day + " not implemented", e);
@@ -29,15 +26,7 @@ public abstract class Day {
         }
     }
 
-    public abstract Answer solve();
-
-    protected String getInput() {
-        return this.input;
-    }
-
-    private void setInput(String input) {
-        this.input = input;
-    }
+    public abstract Answer solve(String input);
 
     @StandardException
     public static class DayFactoryException extends RuntimeException {}

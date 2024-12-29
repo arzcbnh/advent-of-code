@@ -30,8 +30,8 @@ public class AdventOfCode {
         }
 
 //        String input = inputService.getInput(day);
-        var dayInstance = Day.getSolution(day, input);
-        var answer = dayInstance.solve();
+        var dayInstance = Day.getSolution(day);
+        var answer = dayInstance.solve(input);
 
         System.out.println("--- Advent of Code 2024, day " + day + " ---");
         System.out.println("Part 1: " + answer.part1());

@@ -6,8 +6,8 @@ import java.util.stream.Stream;
 import me.arzcbnh.adventofcode.utils.Listx;
 
 public final class Day4 extends Day {
-    public Answer solve() {
-        var crosswords = Crosswords.fromInput(getInput());
+    public Answer solve(String input) {
+        var crosswords = Crosswords.fromInput(input);
 
         long part1 = crosswords.countXmas();
         long part2 = crosswords.countCrossMas();
