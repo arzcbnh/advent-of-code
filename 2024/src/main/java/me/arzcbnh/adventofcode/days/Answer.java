@@ -1,37 +1,35 @@
 package me.arzcbnh.adventofcode.days;
 
-abstract sealed interface Part permits NumberPart, StringPart {
-    Object value();
-}
+public final class Answer {
+    private final Object part1;
+    private final Object part2;
 
-record NumberPart(Number value) implements Part {
-    @Override
-    public final String toString() {
-        return value.toString();
+    private Answer(Object p1, Object p2) {
+        this.part1 = p1;
+        this.part2 = p2;
     }
-}
 
-record StringPart(String value) implements Part {
-    @Override
-    public final String toString() {
-        return value;
-    }
-}
-
-public record Answer(Part part1, Part part2) {
     public Answer(Number p1, Number p2) {
-        this(new NumberPart(p1), new NumberPart(p2));
+        this((Object) p1, p2);
     }
 
     public Answer(Number p1, String p2) {
-        this(new NumberPart(p1), new StringPart(p2));
+        this((Object) p1, p2);
     }
 
     public Answer(String p1, Number p2) {
-        this(new StringPart(p1), new NumberPart(p2));
+        this((Object) p1, p2);
     }
 
     public Answer(String p1, String p2) {
-        this(new StringPart(p1), new StringPart(p2));
+        this((Object) p1, p2);
+    }
+
+    public String part1() {
+        return part1.toString();
+    }
+
+    public String part2() {
+        return part2.toString();
     }
 }
