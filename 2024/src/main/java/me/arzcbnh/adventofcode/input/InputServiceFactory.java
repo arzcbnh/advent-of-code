@@ -9,7 +9,8 @@ public final class InputServiceFactory {
     public static InputService createInputService() {
         Path cacheDirectory = setupCacheDirectory();
         Cache cacheService = new CacheService(cacheDirectory);
-        return new InputService(cacheService);
+        var urlFormat = "https://adventofcode.com/2024/day/%d/input";
+        return new InputService(cacheService, urlFormat);
     }
 
     private static Path setupCacheDirectory() {

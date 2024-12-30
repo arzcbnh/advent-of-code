@@ -11,9 +11,11 @@ import java.nio.file.Paths;
 
 public final class InputService implements InputProvider {
     private final String session = System.getenv("AOC_SESSION");
+    private final String urlFormat;
     private final Cache cache;
 
-    public InputService(Cache cache) {
+    public InputService(Cache cache, String urlFormat) {
+        this.urlFormat = urlFormat;
         this.cache = cache;
     }
 
@@ -51,7 +53,7 @@ public final class InputService implements InputProvider {
 
         try (var client = HttpClient.newHttpClient()) {
             var sessionCookie = "session=" + session;
-            var url = "https://adventofcode.com/2024/day/" + day + "/input";
+            var url = String.format(urlFormat, day);
             var request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .header("Cookie", sessionCookie)
