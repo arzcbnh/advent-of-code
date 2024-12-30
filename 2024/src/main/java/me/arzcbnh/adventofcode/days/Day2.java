@@ -71,8 +71,7 @@ public final class Day2 implements Day {
     }
 
     private List<LevelSequence> parseInput(String input) {
-        List<LevelSequence> reports = input
-                .lines()
+        List<LevelSequence> reports = input.lines()
                 .map(line ->
                         Arrays.stream(line.split(" ")).map(Integer::parseInt).toList())
                 .map(LevelSequence::new)

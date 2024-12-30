@@ -35,7 +35,9 @@ public final class Day5 implements Day {
                 if (isOrdered(update, rules)) {
                     correct.add(update);
                 } else {
-                    sorted.add(update.stream().sorted((a, b) -> comparePages(a, b, rules)).toList());
+                    sorted.add(update.stream()
+                            .sorted((a, b) -> comparePages(a, b, rules))
+                            .toList());
                 }
             }
 
