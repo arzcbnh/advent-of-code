@@ -17,9 +17,9 @@ public final class DayFactory {
         } catch (ClassNotFoundException e) {
             throw new IllegalArgumentException("Day " + day + " not implemented", e);
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException("Day " + day + " not properly implemented", e);
+            throw new DayExecutionException("Day " + day + " not properly implemented", e);
         } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
+            throw new DayExecutionException(e);
         }
     }
 }
