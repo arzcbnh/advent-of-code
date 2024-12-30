@@ -19,7 +19,7 @@ public final class InputService implements InputProvider {
 
     public String getExample() {
         try {
-            var path = Paths.get(System.getProperty("user.dir"), "example");
+            var path = Paths.get("example");
             return Files.readString(path);
         } catch (IOException e) {
             throw new InputServiceException("Unable to get example input", e);
