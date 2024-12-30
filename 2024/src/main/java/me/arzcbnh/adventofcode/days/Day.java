@@ -1,5 +1,27 @@
 package me.arzcbnh.adventofcode.days;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 public abstract class Day {
     public abstract Answer solve(String input);
+
+    public static Day createDay(int day) {
+        if (day < 1 || day > 25) {
+            throw new IllegalArgumentException("Day must be a number between 1 and 25");
+        }
+
+        try {
+            String className = "me.arzcbnh.adventofcode.days.Day" + day;
+            Class<?> dayClass = Class.forName(className);
+            Constructor<?> constructor = dayClass.getConstructor();
+            return (Day) constructor.newInstance();
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("Day " + day + " not implemented", e);
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException("Day " + day + " not properly implemented", e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
