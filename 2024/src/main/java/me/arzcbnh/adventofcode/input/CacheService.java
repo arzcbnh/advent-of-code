@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class CacheService implements Cache {
+public final class CacheService implements Cache {
     private final Path directory;
 
     public CacheService(Path directory) {
