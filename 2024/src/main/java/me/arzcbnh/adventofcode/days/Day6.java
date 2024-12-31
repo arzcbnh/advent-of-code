@@ -1,435 +1,238 @@
 package me.arzcbnh.adventofcode.days;
 
 import java.util.*;
-import java.util.stream.IntStream;
+import me.arzcbnh.adventofcode.util.Listx;
+import me.arzcbnh.adventofcode.util.Listx.Index2D;
 
 public final class Day6 implements Day {
-    private record Coordinate(int x, int y) {}
+    private enum Direction {
+        North,
+        South,
+        West,
+        East;
 
-    //    private enum Direction {
-    //        North,
-    //        South,
-    //        West,
-    //        East;
-    //
-    //        public static Direction fromChar(int c) {
-    //            return switch (c) {
-    //                case '^' -> North;
-    //                case 'v' -> South;
-    //                case '<' -> West;
-    //                case '>' -> East;
-    //                default -> throw new IllegalArgumentException("No direction constant for char " + c + " found");
-    //            };
-    //        }
-    //    }
-    //
-    //        private enum TileType {
-    //            Empty,
-    //            Obstacle,
-    //            Guard;
-    //
-    //            public static TileType fromChar(int c) {
-    //                return switch (c) {
-    //                    case '.' -> Empty;
-    //                    case '#' -> Obstacle;
-    //                    case '^', 'v', '<', '>' -> Guard;
-    //                    default -> throw new IllegalArgumentException("No legend constant for char " + c + " found");
-    //                };
-    //            }
-    //        }
-    //
-    //    private static class Tile {
-    //        public TileType type;
-    //        public Direction dir;
-    //        public int steps = 0;
-    //
-    //        private Tile(TileType type, Direction dir) {
-    //            this.type = type;
-    //            this.dir = dir;
-    //        }
-    //
-    //        public static Tile fromChar(int c) {
-    //            var type = TileType.fromChar(c);
-    //            var dir = type == TileType.Guard ? Direction.fromChar(c) : null;
-    //            return new Tile(type, dir);
-    //        }
-    //    }
-    //
-    //    private static class LaboratoryMap {
-    //        private final List<List<Tile>> map;
-    //        private int totalSteps = 0;
-    //
-    //        private final Coordinate guardStartPosition;
-    //        private Coordinate guardPosition;
-    //
-    //        public LaboratoryMap(List<List<Tile>> map, Coordinate guardStart) {
-    //            this.guardStartPosition = guardStart;
-    //            this.map = map;
-    //        }
-    //
-    //        public static LaboratoryMap fromInput(String input) {
-    //            var tiles = input.lines().map(line -> line.chars().mapToObj(Tile::fromChar));
-    //            var map = tiles.map(line -> (List<Tile>) line.collect(Collectors.toCollection(ArrayList::new)))
-    //                    .toList();
-    //
-    //            var guardStart = findGuardStart(map);
-    //
-    //            return new LaboratoryMap(map, guardStart);
-    //        }
-    //
-    //        private static Coordinate findGuardStart(List<List<Tile>> map) {
-    //            for (int y = 0; y < map.size(); y++) {
-    //                for (int x = 0; x < map.get(y).size(); x++) {
-    //                    var tile = map.get(y).get(x);
-    //
-    //                    if (tile.type == TileType.Guard) {
-    //                        return new Coordinate(x, y);
-    //                    }
-    //                }
-    //            }
-    //
-    //            throw new DayExecutionException("Invalid input: guard character not found");
-    //        }
-    //
-    //        public void step() {
-    //            int x = guardPosition.x;
-    //            int y = guardPosition.y;
-    //            var tile = map.get(y).get(x);
-    //
-    //            tile.steps++;
-    //
-    //            switch (tile.dir) {
-    //                case North:
-    //                    if (y == 0) {
-    //                        break;
-    //                    } else if (map.get(y - 1).get(x).type == TileType.Empty) {
-    //                        guardPosition = new Coordinate(x, y - 1);
-    //                        var next = map.get(y - 1).get(x);
-    //                        next.type = tile.type;
-    //                        next.dir = tile.dir;
-    //                    } else {
-    //                        map.get(y).get(x).dir = Direction.East;
-    //                    }
-    //
-    //                    break;
-    //                case East:
-    //                    if (x + 1 == map.get(y).size()) {
-    //                        break;
-    //                    } else if (map.get(y).get(x + 1).type == TileType.Empty) {
-    //                        guardPosition = new Coordinate(x + 1, y);
-    //                        var next = map.get(y).get(x + 1);
-    //                        next.type = tile.type;
-    //                        next.dir = tile.dir;
-    //                    } else {
-    //                        map.get(y).get(x).dir = Direction.South;
-    //                    }
-    //
-    //                    break;
-    //                case South:
-    //                    if (y + 1 == map.size()) {
-    //                        break;
-    //                    } else if (map.get(y + 1).get(x).type == TileType.Empty) {
-    //                        guardPosition = new Coordinate(x, y + 1);
-    //                        var next = map.get(y + 1).get(x);
-    //                        next.type = tile.type;
-    //                        next.dir = tile.dir;
-    //                    } else {
-    //                        map.get(y).get(x).dir = Direction.West;
-    //                    }
-    //
-    //                    break;
-    //                case West:
-    //                    if (x == 0) {
-    //                        break;
-    //                    } else if (map.get(y).get(x - 1).type == TileType.Empty) {
-    //                        guardPosition = new Coordinate(x - 1, y);
-    //                        var next = map.get(y).get(x - 1);
-    //                        next.type = tile.type;
-    //                        next.dir = tile.dir;
-    //                    } else {
-    //                        map.get(y).get(x).dir = Direction.South;
-    //                    }
-    //
-    //                    break;
-    //            }
-    //        }
-    //    }
+        public static Direction fromChar(char c) {
+            return switch (c) {
+                case '^' -> North;
+                case 'v' -> South;
+                case '<' -> West;
+                case '>' -> East;
+                default -> throw new IllegalArgumentException("Invalid direction char: " + c);
+            };
+        }
 
-    //
-    //    private enum Legend {
-    //        Guard('^'),
-    //        Obstruction('#'),
-    //        Empty('.');
-    //
-    //        private final int symbol;
-    //
-    //        Legend(int symbol) {
-    //            this.symbol = symbol;
-    //        }
-    //
-    //        public static Legend fromSymbol(int symbol) {
-    //            for (var legend : Legend.values()) {
-    //                if (legend.symbol == symbol) {
-    //                    return legend;
-    //                }
-    //            }
-    //
-    //            throw new IllegalArgumentException("No legend constant with symbol " + symbol + " found");
-    //        }
-    //    }
-    //
-    //    private record Tile(int content, Map<Direction, Boolean> log) {
-    //        public Tile(int content) {
-    //            this(content, new EnumMap<>(Direction.class));
-    //        }
-    //
-    //        public void addToLog(Direction dir) {
-    //            log.put(dir, true);
-    //        }
-    //
-    //        public boolean hasPassedFacing(Direction dir) {
-    //            return log.getOrDefault(dir, false);
-    //        }
-    //    }
-    //
-    //    private static class LabMap {
-    //        private final List<List<Tile>> map;
-    //        private final Coordinate initialPosition;
-    //
-    //        public LabMap(List<List<Tile>> map, Coordinate initialPosition) {
-    //            this.initialPosition = initialPosition;
-    //            this.map = map;
-    //        }
-    //
-    //        public static LabMap fromInput(String input) {
-    //            List<List<Tile>> chars =
-    //                    input.lines().map(line -> line.chars().mapToObj(Tile::new).toList()).toList();
-    //
-    //            return new LabMap(chars, findGuardCoordinate(chars));
-    //        }
-    //
-    //        private static Coordinate findGuardCoordinate(List<List<Tile>> map) {
-    //            for (int y = 0; y < map.size(); y++) {
-    //                for (int x = 0; x < map.get(y).size(); x++) {
-    //                    if (map.get(y).get(x).content == '^') {
-    //                        return new Coordinate(x, y);
-    //                    }
-    //                }
-    //            }
-    //
-    //            return new Coordinate(0, 0);
-    //        }
-    //
-    //        public void reset() {
-    //
-    //        }
-    //    }
+        public static boolean isValidChar(char c) {
+            return c == '^' || c == 'v' || c == '<' || c == '>';
+        }
+    }
+
+    private enum Action {
+        Moved,
+        Rotated,
+        Exited,
+        Looped;
+    }
+
+    private enum TileType {
+        Obstacle,
+        Empty
+    }
+
+    private static class Tile {
+        public TileType type;
+        public int visits = 0;
+
+        public Tile(TileType type) {
+            this.type = type;
+        }
+
+        public static Tile fromChar(char c) {
+            return switch (c) {
+                case '#' -> new Tile(TileType.Obstacle);
+                case '.' -> new Tile(TileType.Empty);
+                default -> {
+                    if (Direction.isValidChar(c)) {
+                        yield new Tile(TileType.Empty);
+                    }
+
+                    throw new DayExecutionException("Invalid tile char: " + c);
+                }
+            };
+        }
+    }
+
+    private static class Guard {
+        public int x;
+        public int y;
+        public Direction direction;
+        private final Index2D initialPosition;
+        private final Direction initialDirection;
+        private final List<Index2D> trajectory;
+
+        public Guard(int x, int y, Direction dir) {
+            this.x = x;
+            this.y = y;
+            this.direction = dir;
+            this.initialPosition = new Index2D(x, y);
+            this.initialDirection = dir;
+            this.trajectory = new ArrayList<>();
+        }
+
+        public static Guard fromSplitInput(List<List<Character>> input) {
+            var index = Listx.findIndex2D(input, c -> c == '^' || c == 'v' || c == '<' || c == '>');
+
+            if (index == null) {
+                throw new IllegalStateException("Invalid input: guard character not found");
+            } else {
+                int x = index.x();
+                int y = index.y();
+                return new Guard(x, y, Direction.fromChar(input.get(y).get(x)));
+            }
+        }
+
+        public void saveCurrentPosition() {
+            trajectory.add(new Index2D(x, y));
+        }
+
+        public Action move(LaboratoryMap map) {
+            var next = getNextPosition(map);
+
+            if (map.isIndexOutOfBounds(next)) {
+                return Action.Exited;
+            } else if (map.isIndexObstructed(next)) {
+                rotate();
+                return Action.Rotated;
+            } else {
+                this.x = next.x();
+                this.y = next.y();
+                saveCurrentPosition();
+
+                var tile = map.getTile(next);
+                tile.visits++;
+
+                if (tile.visits > 4) {
+                    return Action.Looped;
+                } else {
+                    return Action.Moved;
+                }
+            }
+        }
+
+        private Index2D getNextPosition(LaboratoryMap map) {
+            int x = this.x;
+            int y = this.y;
+
+            switch (direction) {
+                case North -> y--;
+                case South -> y++;
+                case West -> x--;
+                case East -> x++;
+            }
+
+            return new Index2D(x, y);
+        }
+
+        private void rotate() {
+            this.direction = switch (direction) {
+                case North -> Direction.East;
+                case East -> Direction.South;
+                case South -> Direction.West;
+                case West -> Direction.North;
+            };
+        }
+
+        public void reset() {
+            x = initialPosition.x();
+            y = initialPosition.y();
+            direction = initialDirection;
+        }
+    }
+
+    private static class LaboratoryMap {
+        private final List<List<Tile>> tiles;
+
+        public LaboratoryMap(List<List<Tile>> tiles) {
+            this.tiles = tiles;
+        }
+
+        public static LaboratoryMap fromSplitInput(List<List<Character>> input, Guard guard) {
+            List<List<Tile>> tiles = new ArrayList<>(Collections.nCopies(input.size(), null));
+            tiles.replaceAll((__) -> new ArrayList<>());
+
+            Listx.forEach2D(input, (x, y) -> {
+                char c = input.get(y).get(x);
+                tiles.get(y).add(Tile.fromChar(c));
+            });
+
+            tiles.get(guard.y).get(guard.x).visits++;
+            return new LaboratoryMap(tiles);
+        }
+
+        public Tile getTile(Index2D index) {
+            return tiles.get(index.y()).get(index.x());
+        }
+
+        public int countVisitedTiles() {
+            return tiles.stream()
+                    .flatMap(List::stream)
+                    .filter(tile -> tile.type == TileType.Empty)
+                    .mapToInt(empty -> empty.visits > 0 ? 1 : 0)
+                    .sum();
+        }
+
+        public boolean isIndexOutOfBounds(Index2D index) {
+            int x = index.x();
+            int y = index.y();
+            return x < 0 || y < 0 || x >= tiles.getFirst().size() || y >= tiles.size();
+        }
+
+        public boolean isIndexObstructed(Index2D index) {
+            int x = index.x();
+            int y = index.y();
+            return tiles.get(y).get(x).type == TileType.Obstacle;
+        }
+
+        public void clear() {
+            tiles.forEach(row -> row.forEach(tile -> tile.visits = 0));
+        }
+
+        public void setTile(Index2D index, TileType type) {
+            tiles.get(index.y()).get(index.x()).type = type;
+        }
+    }
 
     @Override
     public Answer solve(String input) {
-        List<List<Integer>> map = input.lines()
-                .map(line ->
-                        (List<Integer>) new ArrayList<>(line.chars().boxed().toList()))
-                .toList();
+        List<List<Character>> split = splitInput(input);
+        var guard = Guard.fromSplitInput(split);
+        var laboratory = LaboratoryMap.fromSplitInput(split, guard);
 
-        Coordinate guard = findGuard(map);
-        List<Coordinate> passed = new ArrayList<>();
+        for (var status = Action.Moved; status != Action.Exited; status = guard.move(laboratory))
+            ;
 
-        processMap(map, passed, guard);
-        long part1 = map.stream()
-                .mapToLong(line -> line.stream().filter(c -> c == 'X').count())
-                .sum();
-
+        long part1 = laboratory.countVisitedTiles();
         long part2 = 0;
 
-        passed = passed.stream().distinct().toList();
+        for (var index : guard.trajectory.stream().distinct().toList()) {
+            guard.reset();
+            laboratory.clear();
+            laboratory.setTile(index, TileType.Obstacle);
+            var status = Action.Moved;
 
-        for (var coord : passed.subList(1, passed.size())) {
-            clearMap(map, guard);
-            int x = coord.x;
-            int y = coord.y;
-            //            int x = 7;
-            //            int y = 9;
-
-            map.get(y).set(x, (int) '#');
-
-            if (hasLoop(map, guard)) {
-                System.out.println("" + x + " " + y);
-                part2++;
+            while (status == Action.Moved || status == Action.Rotated) {
+                status = guard.move(laboratory);
+                part2 += status == Action.Looped ? 1 : 0;
             }
 
-            //            System.out.println(part2);
-            //            System.exit(0);
-            map.get(y).set(x, (int) '.');
+            laboratory.setTile(index, TileType.Empty);
         }
 
         return new Answer(part1, part2);
     }
 
-    private static Coordinate findGuard(List<List<Integer>> map) {
-        for (int y = 0; y < map.size(); y++) {
-            for (int x = 0; x < map.get(y).size(); x++) {
-                if (map.get(y).get(x) == '^') {
-                    return new Coordinate(x, y);
-                }
-            }
-        }
-
-        return new Coordinate(0, 0);
+    private static List<List<Character>> splitInput(String input) {
+        return input.lines()
+                .map(line -> line.chars().mapToObj(c -> (char) c).toList())
+                .toList();
     }
-
-    private void processMap(List<List<Integer>> map, List<Coordinate> passed, Coordinate guard) {
-        while (true) {
-            int x = guard.x;
-            int y = guard.y;
-            int c = map.get(y).get(x);
-            map.get(y).set(x, (int) 'X');
-            //            System.out.println("" + x + " " + y);
-
-            if (c == '^') {
-                if (y == 0) {
-                    passed.add(new Coordinate(x, y));
-                    break;
-                } else if (map.get(y - 1).get(x) == '#') {
-                    map.get(y).set(x, (int) '>');
-                } else {
-                    map.get(y - 1).set(x, (int) '^');
-                    guard = new Coordinate(x, y - 1);
-                    passed.add(new Coordinate(x, y));
-                }
-            } else if (c == '>') {
-                if (x + 1 == map.get(y).size()) {
-                    passed.add(new Coordinate(x, y));
-                    break;
-                } else if (map.get(y).get(x + 1) == '#') {
-                    map.get(y).set(x, (int) 'v');
-                } else {
-                    map.get(y).set(x + 1, (int) '>');
-                    guard = new Coordinate(x + 1, y);
-                    passed.add(new Coordinate(x, y));
-                }
-            } else if (c == 'v') {
-                if (y + 1 == map.size()) {
-                    passed.add(new Coordinate(x, y));
-                    break;
-                } else if (map.get(y + 1).get(x) == '#') {
-                    map.get(y).set(x, (int) '<');
-                } else {
-                    map.get(y + 1).set(x, (int) 'v');
-                    guard = new Coordinate(x, y + 1);
-                    passed.add(new Coordinate(x, y));
-                }
-            } else {
-                if (x == 0) {
-                    passed.add(new Coordinate(x, y));
-                    break;
-                } else if (map.get(y).get(x - 1) == '#') {
-                    map.get(y).set(x, (int) '^');
-                } else {
-                    map.get(y).set(x - 1, (int) '<');
-                    guard = new Coordinate(x - 1, y);
-                    passed.add(new Coordinate(x, y));
-                }
-            }
-        }
-    }
-
-    private boolean hasLoop(List<List<Integer>> map, Coordinate guard) {
-        var count = new ArrayList<>(IntStream.range(0, map.size())
-                .mapToObj(y -> new ArrayList<>(IntStream.range(0, map.get(y).size())
-                        .map(x -> 0)
-                        .boxed()
-                        .toList()))
-                .toList());
-
-        while (true) {
-            //            printmap(map);
-            int x = guard.x;
-            int y = guard.y;
-            int c = map.get(y).get(x);
-            map.get(y).set(x, (int) '.');
-            count.get(y).set(x, count.get(y).get(x) + 1);
-
-            if (count.get(y).get(x) > 4) {
-                return true;
-            }
-
-            if (c == '^') {
-                if (y == 0) {
-                    break;
-                } else if (map.get(y - 1).get(x) == '#') {
-                    map.get(y).set(x, (int) '>');
-                } else {
-                    map.get(y - 1).set(x, (int) '^');
-                    guard = new Coordinate(x, y - 1);
-                }
-            } else if (c == '>') {
-                if (x + 1 == map.get(y).size()) {
-                    break;
-                } else if (map.get(y).get(x + 1) == '#') {
-                    map.get(y).set(x, (int) 'v');
-                } else {
-                    map.get(y).set(x + 1, (int) '>');
-                    guard = new Coordinate(x + 1, y);
-                }
-            } else if (c == 'v') {
-                if (y + 1 == map.size()) {
-                    break;
-                } else if (map.get(y + 1).get(x) == '#') {
-                    map.get(y).set(x, (int) '<');
-                } else {
-                    map.get(y + 1).set(x, (int) 'v');
-                    guard = new Coordinate(x, y + 1);
-                }
-            } else {
-                if (x == 0) {
-                    break;
-                } else if (map.get(y).get(x - 1) == '#') {
-                    map.get(y).set(x, (int) '^');
-                } else {
-                    map.get(y).set(x - 1, (int) '<');
-                    guard = new Coordinate(x - 1, y);
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private void clearMap(List<List<Integer>> map, Coordinate guard) {
-        map.get(guard.y).set(guard.x, (int) '^');
-
-        for (List<Integer> integers : map) {
-            for (int x = 0; x < integers.size(); x++) {
-                int val = integers.get(x);
-                if (val != '#' && val != '^') {
-                    integers.set(x, (int) '.');
-                }
-            }
-        }
-    }
-
-    //    private int count = 0;
-
-    //    private void printmap(List<List<Integer>> map) {
-    //        map.forEach(line -> {
-    //            line.forEach(c -> {
-    //                if (c < 10) {
-    //                    System.out.print(c);
-    //                } else {
-    //                    System.out.print((char) c.intValue());
-    //                    //                    System.out.print(c);
-    //                }
-    //            });
-    //
-    //            System.out.print('\n');
-    //        });
-    //        System.out.print('\n');
-    //
-    //        count++;
-    //
-    //        if (count == 10) {
-    //            System.exit(0);
-    //        }
-    //    }
 }
