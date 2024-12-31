@@ -1,4 +1,4 @@
-package me.arzcbnh.adventofcode.utils;
+package me.arzcbnh.adventofcode.util;
 
 import me.arzcbnh.adventofcode.util.function.IntBinaryConsumer;
 

@@ -3,7 +3,7 @@ package me.arzcbnh.adventofcode.days;
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import me.arzcbnh.adventofcode.utils.Listx;
+import me.arzcbnh.adventofcode.util.Listx;
 
 public final class Day4 implements Day {
     public Answer solve(String input) {
