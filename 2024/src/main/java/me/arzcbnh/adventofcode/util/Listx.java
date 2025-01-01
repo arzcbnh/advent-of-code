@@ -1,11 +1,10 @@
 package me.arzcbnh.adventofcode.util;
 
-import me.arzcbnh.adventofcode.util.function.IntBinaryConsumer;
-
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
+import me.arzcbnh.adventofcode.util.function.IntBinaryConsumer;
 
 public class Listx {
     public record Index2D(int x, int y) {}
