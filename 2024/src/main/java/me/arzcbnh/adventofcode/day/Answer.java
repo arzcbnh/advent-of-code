@@ -1,4 +1,4 @@
-package me.arzcbnh.adventofcode.solution;
+package me.arzcbnh.adventofcode.day;
 
 public final class Answer {
     private final Object part1;
