@@ -1,5 +1,5 @@
 package me.arzcbnh.adventofcode.solution;
 
-public interface Challenge {
+public interface Solver {
     Answer solve(String input);
 }
