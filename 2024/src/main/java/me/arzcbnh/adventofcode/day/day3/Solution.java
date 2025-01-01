@@ -1,8 +1,11 @@
-package me.arzcbnh.adventofcode.days;
+package me.arzcbnh.adventofcode.day.day3;
 
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import me.arzcbnh.adventofcode.day.Answer;
+import me.arzcbnh.adventofcode.day.Solver;
 
-public final class Day3 implements Day {
+public final class Solution implements Solver {
     private static final String DO_COMMAND = "do()";
     private static final String DONT_COMMAND = "don't()";
 
