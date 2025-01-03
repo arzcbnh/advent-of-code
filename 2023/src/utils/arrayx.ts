@@ -1,5 +1,6 @@
 export const equals = Symbol();
 export const group = Symbol();
+export const max = Symbol();
 export const subarray = Symbol();
 export const sum = Symbol();
 export const transpose = Symbol();
@@ -10,6 +11,7 @@ declare global {
     interface Array<T> {
         [equals]: (arr: T[]) => boolean;
         [group]: (size: number) => T[][];
+        [max]: (this: number[]) => number;
         [subarray]: (start: number, end?: number) => T[];
         [sum]: (this: number[]) => number;
         [transpose]: () => T[];
@@ -49,6 +51,10 @@ Array.prototype[group] = function <T>(size: number) {
     }
 
     return groups;
+};
+
+Array.prototype[max] = function (this: number[]): number {
+    return this.reduce((max, num) => Math.max(max, num), -Infinity);
 };
 
 /**
