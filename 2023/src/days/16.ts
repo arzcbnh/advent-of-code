@@ -1,4 +1,5 @@
-// Constants
+import { max } from "#root/utils/arrayx.js";
+
 const Mirror = {
     BottomUp: "/",
     TopDown: "\\",
@@ -10,84 +11,83 @@ const Splitter = {
 } as const;
 
 const Part = { ...Mirror, ...Splitter, Empty: "." } as const;
-const Direction = ["north", "south", "west", "east"] as const;
-
-// Types
 type Part = (typeof Part)[keyof typeof Part];
+
+const Direction = ["north", "south", "west", "east"] as const;
 type Direction = (typeof Direction)[number];
-type Beam = {
-    x: number;
-    y: number;
-    direction: Direction;
-};
 
-type Tile = {
-    part: Part;
-    beams: Beam[];
-};
-
-type Contraption = Tile[][];
 type Index2D = {
     x: number;
     y: number;
 };
 
-type Track = Record<Direction, boolean>;
+type Contraption = Part[][];
+type DirectionTracker = Record<Direction, boolean>;
+type Beam = Index2D & { direction: Direction };
 
-// Implementation
+type Simulation = {
+    readonly contraption: Contraption;
+    readonly trackers: DirectionTracker[][];
+    readonly beams: Set<Beam>;
+};
+
+const TOP_DOWN_REFLECTION_MAP = {
+    north: "west",
+    south: "east",
+    west: "north",
+    east: "south",
+} as const;
+
+const BOTTOM_UP_REFLECTION_MAP = {
+    north: "east",
+    south: "west",
+    west: "south",
+    east: "north",
+} as const;
+
+const BEAM_REFLECTORS = {
+    [Mirror.TopDown]: TOP_DOWN_REFLECTION_MAP,
+    [Mirror.BottomUp]: BOTTOM_UP_REFLECTION_MAP,
+} as const;
+
+const BEAM_SPLITTERS = {
+    [Splitter.Horizontal]: ["west", "east"],
+    [Splitter.Vertical]: ["north", "south"],
+} as const;
+
 export function solve(layout: Input): Solution {
     const contraption = parseLayout(layout);
-    const allEntrances = (() => {
-        const top = contraption[0].map((_, x) => ({ x, y: -1, direction: "south" }));
-        const bot = contraption[contraption.length - 1].map((_, x) => ({
-            x,
-            y: contraption.length,
-            direction: "north",
-        }));
-        const lef = contraption.map((_, y) => ({ x: -1, y, direction: "east" }));
-        const rig = contraption.map((_, y) => ({ x: contraption[0].length, y, direction: "west" }));
+    const energizedCount = generateSimulations(contraption)
+        .map(sim => (runSimulation(sim), sim))
+        .map(countEnergized)
+        .toArray();
 
-        return top.concat(bot).concat(lef).concat(rig);
-    })();
-
-    const part1 = countEnergizedTiles(contraption, { x: -1, y: 0, direction: "east" });
-    const part2 = allEntrances.reduce((max, ent) => {
-        const energized = countEnergizedTiles(contraption, ent);
-        return Math.max(max, energized);
-    }, -Infinity);
+    const part1 = energizedCount[0];
+    const part2 = energizedCount[max]();
 
     return { part1, part2 };
-    // const beam = { direction: "east" } satisfies Beam;
 }
 
 function parseLayout(layout: string): Contraption {
     const grid = layout.split("\n").map(line => line.split(""));
-    const contraption = grid.map(row =>
-        row.map(char => {
-            const part = char;
-            const beams = [] satisfies unknown[];
+    assertContraption(grid);
 
-            return { part, beams };
-        })
-    );
-
-    assertContraption(contraption);
-    return contraption;
+    return grid;
 }
 
-function assertContraption(grid: { part: string; beams: unknown[] }[][]): asserts grid is Contraption {
+function assertContraption(grid: string[][]): asserts grid is Contraption {
     const parts = Object.values<string>(Part);
 
     for (const [y, row] of grid.entries()) {
-        for (const [x, tile] of row.entries()) {
-            if (!parts.includes(tile.part)) {
-                throw new Error(`Invalid character ${tile.part} at row ${y}, column ${x}`);
+        for (const [x, char] of row.entries()) {
+            if (!parts.includes(char)) {
+                throw new Error(`Invalid character ${char} at row ${y}, column ${x}`);
             }
         }
     }
 }
 
-function createTrack(): Track {
+function createTracker(): DirectionTracker {
     return {
         north: false,
         south: false,
@@ -96,89 +96,65 @@ function createTrack(): Track {
     };
 }
 
-function countEnergizedTiles(contraption: Contraption, init: Beam): number {
-    const tracks = contraption.map(row => row.map(createTrack));
-    const beams = new Set([init]);
+function createSimulation(contraption: Contraption, start: Beam): Simulation {
+    const trackers = contraption.map(row => row.map(createTracker));
+    const beams = new Set<Beam>();
+    beams.add(start);
 
-    while (beams.size > 0) {
-        step(contraption, beams, tracks);
-    }
-
-    // printcont(tracks);
-    return tracks.flat().filter(track => Direction.some(dir => track[dir])).length;
+    return { contraption, trackers, beams };
 }
 
-function step(contraption: Contraption, beams: Set<Beam>, tracks: Track[][]): void {
-    for (const [beam] of beams.entries()) {
-        const next = calcNextTile(beam);
-        // console.log("doing sum'");
-        // console.log(next);
-
-        if (!isWithinBounds(contraption, next)) {
-            // console.log("out");
-            beams.delete(beam);
-            continue;
-        }
-
-        if (tracks[next.y][next.x][beam.direction]) {
-            // console.log("tracked");
-            beams.delete(beam);
-            continue;
-        }
-
-        const { part } = contraption[next.y][next.x];
-        const track = tracks[next.y][next.x];
-        track[beam.direction] = true;
-        // printcont(tracks);
-
-        switch (part) {
-            case "-":
-                if (beam.direction === "west" || beam.direction === "east") {
-                    beams.add({ ...beam, ...next });
-                    break;
-                }
-
-                beams.add({ ...next, direction: "west" });
-                beams.add({ ...next, direction: "east" });
-                break;
-            case "|":
-                if (beam.direction === "north" || beam.direction === "south") {
-                    beams.add({ ...beam, ...next });
-                    break;
-                }
-
-                beams.add({ ...next, direction: "north" });
-                beams.add({ ...next, direction: "south" });
-                break;
-            case "/":
-                if (beam.direction === "north") {
-                    beams.add({ ...next, direction: "east" });
-                } else if (beam.direction === "south") {
-                    beams.add({ ...next, direction: "west" });
-                } else if (beam.direction === "west") {
-                    beams.add({ ...next, direction: "south" });
-                } else {
-                    beams.add({ ...next, direction: "north" });
-                }
-                break;
-            case "\\":
-                if (beam.direction === "north") {
-                    beams.add({ ...next, direction: "west" });
-                } else if (beam.direction === "south") {
-                    beams.add({ ...next, direction: "east" });
-                } else if (beam.direction === "west") {
-                    beams.add({ ...next, direction: "north" });
-                } else {
-                    beams.add({ ...next, direction: "south" });
-                }
-                break;
-            case ".":
-                beams.add({ ...beam, ...next });
-                break;
-        }
-
-        beams.delete(beam);
+function* generateSimulations(contraption: Contraption): Generator<Simulation> {
+    for (let y = 0; y < contraption.length; y++) {
+        yield createSimulation(contraption, { x: -1, y, direction: "east" });
+        yield createSimulation(contraption, { x: contraption[0].length, y, direction: "west" });
     }
+
+    for (let x = 0; x < contraption[0].length; x++) {
+        yield createSimulation(contraption, { x, y: -1, direction: "south" });
+        yield createSimulation(contraption, { x, y: contraption.length, direction: "north" });
+    }
+}
+
+function runSimulation(sim: Simulation): void {
+    const { contraption, trackers, beams } = sim;
+
+    while (beams.size > 0) {
+        for (const [beam] of beams.entries()) {
+            const next = calcNextTile(beam);
+            beams.delete(beam);
+
+            if (isOutOfBounds(contraption, next) || isLooping(trackers, next, beam)) {
+                continue;
+            }
+
+            moveBeam(sim, beam, next);
+        }
+    }
+}
+
+function moveBeam(sim: Simulation, beam: Beam, index: Index2D) {
+    const { contraption, trackers, beams } = sim;
+    const { x, y } = index;
+    const part = contraption[y][x];
+    trackers[y][x][beam.direction] = true;
+
+    switch (part) {
+        case Splitter.Horizontal:
+        case Splitter.Vertical:
+            BEAM_SPLITTERS[part].forEach(direction => beams.add({ ...index, direction }));
+            break;
+        case Mirror.BottomUp:
+        case Mirror.TopDown:
+            beams.add({ ...index, direction: BEAM_REFLECTORS[part][beam.direction] });
+            break;
+        case Part.Empty:
+            beams.add({ ...beam, ...index });
+    }
+}
+
+function countEnergized({ trackers }: Simulation): number {
+    return trackers.flat().filter(tracker => Direction.some(dir => tracker[dir])).length;
 }
 
 function calcNextTile(beam: Beam): Index2D {
@@ -189,17 +165,10 @@ function calcNextTile(beam: Beam): Index2D {
     return { x, y };
 }
 
-function isWithinBounds(arr: unknown[][], { x, y }: Index2D): boolean {
-    // console.log(`${y} >= 0, ${y >= 0}`);
-    // console.log(`${x} >= 0, ${x >= 0}`);
-    // console.log(`${y} < ${arr.length}, ${y < arr.length}`);
-    // console.log(`${x} < ${arr[y].length}, ${y < arr[y].length}`);
-    // console.log(arr.length, arr[y].length);
-    return y >= 0 && x >= 0 && y < arr.length && x < arr[y].length;
+function isOutOfBounds(arr: unknown[][], { x, y }: Index2D): boolean {
+    return !(y >= 0 && x >= 0 && y < arr.length && x < arr[y].length);
 }
 
-function printcont(tracks: Track[][]) {
-    console.log(
-        tracks.map(row => row.map(track => (Direction.some(dir => track[dir]) ? "#" : ".")).join("")).join("\n")
-    );
+function isLooping(tracks: DirectionTracker[][], next: Index2D, beam: Beam): boolean {
+    return tracks[next.y][next.x][beam.direction];
 }
