@@ -22,7 +22,7 @@ final class Equation {
 
     public boolean isValid(List<Operator> operators) {
         var stack = new Stack<State>();
-        operators.forEach(op -> stack.add(new State(op.identity(), 0, op)));
+        operators.forEach(op -> stack.add(new State(operands.getFirst(), 1, op)));
 
         while (!stack.isEmpty()) {
             var state = stack.pop();
@@ -34,9 +34,9 @@ final class Equation {
             if (hasOperatedAll && isExpectedValue) {
                 return true;
             } else if (!hasOperatedAll && !hasExceededValue) {
-                long a = state.value();
-                long b = operands.get(state.index());
-                long value = state.operator().calculate(a, b);
+                long left = state.value();
+                long right = operands.get(state.index());
+                long value = state.operator().calculate(left, right);
                 int index = state.index() + 1;
 
                 operators.forEach(op -> stack.add(new State(value, index, op)));
