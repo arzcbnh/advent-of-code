@@ -79,7 +79,7 @@
             <id>spotless-apply</id>
             <phase>validate</phase>
             <goals>
-                <goal>apply</goal>
+              <goal>apply</goal>
             </goals>
           </execution>
         </executions>

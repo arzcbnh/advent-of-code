@@ -41,6 +41,5 @@ public class AdventOfCode {
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
-
     }
 }
