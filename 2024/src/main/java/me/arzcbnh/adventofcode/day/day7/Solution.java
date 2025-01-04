@@ -1,5 +1,6 @@
 package me.arzcbnh.adventofcode.day.day7;
 
+import java.util.Arrays;
 import java.util.List;
 import me.arzcbnh.adventofcode.day.Answer;
 import me.arzcbnh.adventofcode.day.Solver;
@@ -7,12 +8,18 @@ import me.arzcbnh.adventofcode.day.Solver;
 public final class Solution implements Solver {
     @Override
     public Answer solve(String input) {
+        List<Operator> operators = Arrays.asList(Operator.values());
         List<Equation> equations = input.lines().map(Equation::new).toList();
-        List<Equation> valid = equations.stream().filter(Equation::isValid).toList();
-        List<Equation> vp2 = equations.stream().filter(Equation::part2).toList();
 
-        long part1 = valid.stream().mapToLong(eq -> eq.value).sum();
-        long part2 = vp2.stream().mapToLong(eq -> eq.value).sum();
+        List<Equation> validWithoutConcat = equations.stream()
+                .filter(eq -> eq.isValid(operators.subList(0, 2)))
+                .toList();
+
+        List<Equation> validWithConcat =
+                equations.stream().filter(eq -> eq.isValid(operators)).toList();
+
+        long part1 = validWithoutConcat.stream().mapToLong(Equation::getValue).sum();
+        long part2 = validWithConcat.stream().mapToLong(Equation::getValue).sum();
 
         return new Answer(part1, part2);
     }

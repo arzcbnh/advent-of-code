@@ -2,11 +2,16 @@ package me.arzcbnh.adventofcode.day.day7;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
+import lombok.Getter;
+
+record State(long value, int index, Operator operator) {}
 
 final class Equation {
-    public final long value;
+    @Getter
+    private final long value;
+
     private final List<Integer> operands;
-    private Boolean isValid;
 
     public Equation(String encoded) {
         String[] parts = encoded.split(": ");
@@ -15,51 +20,29 @@ final class Equation {
                 Arrays.stream(parts[1].split(" ")).map(Integer::parseInt).toList();
     }
 
-    public boolean isValid() {
-        return op(0, Operator.Addition, 0) || op(0, Operator.Multiplication, 1);
-    }
+    public boolean isValid(List<Operator> operators) {
+        var stack = new Stack<State>();
+        operators.forEach(op -> stack.add(new State(op.identity(), 0, op)));
 
-    public boolean part2() {
-        return sop(0, Operator.Addition, 0) || sop(0, Operator.Multiplication, 1) || sop(0, Operator.Concatenation, 0);
-    }
+        while (!stack.isEmpty()) {
+            var state = stack.pop();
 
-    private boolean op(int i, Operator ope, long curr) {
-        if (i >= operands.size()) {
-            return false;
+            boolean hasOperatedAll = state.index() == operands.size();
+            boolean isExpectedValue = state.value() == value;
+            boolean hasExceededValue = state.value() > value;
+
+            if (hasOperatedAll && isExpectedValue) {
+                return true;
+            } else if (!hasOperatedAll && !hasExceededValue) {
+                long a = state.value();
+                long b = operands.get(state.index());
+                long value = state.operator().calculate(a, b);
+                int index = state.index() + 1;
+
+                operators.forEach(op -> stack.add(new State(value, index, op)));
+            }
         }
 
-        if (ope == Operator.Addition) {
-            curr += operands.get(i);
-        } else if (ope == Operator.Multiplication) {
-            curr *= operands.get(i);
-        }
-
-        if (i == operands.size() - 1 && curr == value) {
-            return true;
-        }
-
-        return op(i + 1, Operator.Addition, curr) || op(i + 1, Operator.Multiplication, curr);
-    }
-
-    private boolean sop(int i, Operator ope, long curr) {
-        if (i >= operands.size()) {
-            return false;
-        }
-
-        if (ope == Operator.Addition) {
-            curr += operands.get(i);
-        } else if (ope == Operator.Multiplication) {
-            curr *= operands.get(i);
-        } else {
-            curr = Long.parseLong(String.valueOf(curr) + String.valueOf(operands.get(i)));
-        }
-
-        if (i == operands.size() - 1 && curr == value) {
-            return true;
-        }
-
-        return sop(i + 1, Operator.Addition, curr)
-                || sop(i + 1, Operator.Multiplication, curr)
-                || sop(i + 1, Operator.Concatenation, curr);
+        return false;
     }
 }
