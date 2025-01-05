@@ -5,7 +5,6 @@ export const subarray = Symbol();
 export const sum = Symbol();
 export const transpose = Symbol();
 export const windowed = Symbol();
-export const zip = Symbol();
 
 declare global {
     interface Array<T> {
@@ -16,7 +15,6 @@ declare global {
         [sum]: (this: number[]) => number;
         [transpose]: <T>(this: T[][]) => T[][];
         [windowed]: (size: number) => T[][];
-        [zip]: () => T[];
     }
 }
 
@@ -132,18 +130,4 @@ Array.prototype[windowed] = function <T>(size: number) {
     }
 
     return res;
-};
-
-/**
- * @deprecated
- */
-Array.prototype[zip] = function () {
-    const arr = [];
-
-    for (let i = 0; i < this[0].length; i++) {
-        const a = this.reduce((a, b) => [...a, b[i]], []);
-        arr.push(a);
-    }
-
-    return arr;
 };

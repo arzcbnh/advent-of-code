@@ -1,4 +1,4 @@
-import { zip } from "#root/utils/arrayx.js";
+import { transpose } from "#root/utils/arrayx.js";
 
 type Voids = {
     horizontal: number[];
@@ -31,7 +31,7 @@ function parseGalaxies(image: string): Galaxy[] {
 
 function parseVoids(image: string): Voids {
     const rows = image.split("\n").map(row => row.split(""));
-    const vertical = findVoidIndexes(rows[zip]());
+    const vertical = findVoidIndexes(rows[transpose]());
     const horizontal = findVoidIndexes(rows);
 
     return { horizontal, vertical };

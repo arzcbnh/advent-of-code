@@ -1,13 +1,13 @@
-import { zip } from "#root/utils/arrayx.js";
+import { transpose } from "#root/utils/arrayx.js";
 
 export function solve(sheet: Input): Solution {
     const data = sheet.split("\n").map(line => line.slice(9).trim());
-    const kernedRace = [data.map(line => Number(line.replace(/ /g, "")))];
     const races = data.map(line => line.split(/\s+/).map(Number));
+    const kernedRace = [data.map(line => Number(line.replace(/ /g, "")))];
 
-    // When zipping the races at the variable definition, Prettier breaks it
-    // into a new line, which causes ESLint to complain.
-    const part1 = calcWaysToWin(races[zip]());
+    // When transposing the races at the variable definition, Prettier breaks
+    // it into a new line, which causes ESLint to complain.
+    const part1 = calcWaysToWin(races[transpose]());
     const part2 = calcWaysToWin(kernedRace);
 
     return { part1, part2 };
