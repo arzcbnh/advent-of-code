@@ -14,12 +14,16 @@ declare global {
         [max]: (this: number[]) => number;
         [subarray]: (start: number, end?: number) => T[];
         [sum]: (this: number[]) => number;
-        [transpose]: () => T[];
+        [transpose]: <T>(this: T[][]) => T[][];
         [windowed]: (size: number) => T[][];
         [zip]: () => T[];
     }
 }
 
+/**
+ * Checks if every element between two arrays is equal.
+ * @param other - The array to be compared to.
+ */
 Array.prototype[equals] = function <T>(this: T[], other: T[]): boolean {
     if (this.length !== other.length) {
         return false;
@@ -39,12 +43,12 @@ Array.prototype[equals] = function <T>(this: T[], other: T[]): boolean {
  * divided.
  * @param size - The size of each group.
  */
-Array.prototype[group] = function <T>(size: number) {
+Array.prototype[group] = function <T>(this: T[], size: number): T[][] {
     if (this.length % size) {
-        throw new Error("Array items can't be grouped without leftovers");
+        throw new Error(`Array can't be grouped without ${this.length % size} leftover elements`);
     }
 
-    const groups: T[][] = [];
+    const groups = [];
 
     for (let i = 0; i < this.length; i += size) {
         groups.push(this.slice(i, i + size));
@@ -53,22 +57,23 @@ Array.prototype[group] = function <T>(size: number) {
     return groups;
 };
 
+/**
+ * Reduces an array of numbers to its maximum value.
+ */
 Array.prototype[max] = function (this: number[]): number {
     return this.reduce((max, num) => Math.max(max, num), -Infinity);
 };
 
 /**
- * Emulates String.prototype.substring
- * @param start - The index of the first item to include
- * @param [end] - The index of the first item to exclude
+ * Emulates String.prototype.substring.
+ * @param start - The index of the first item to include.
+ * @param [end] - The index of the first item to exclude.
  */
-Array.prototype[subarray] = function (start: number, end?: number) {
+Array.prototype[subarray] = function <T>(this: T[], start: number, end?: number): T[] {
     const clamp = (x: number) => Math.max(0, Math.min(x, this.length));
 
-    end = end ?? this.length;
-
     start = clamp(start);
-    end = clamp(end);
+    end = clamp(end ?? this.length);
 
     if (start > end) {
         const tmp = start;
@@ -79,19 +84,27 @@ Array.prototype[subarray] = function (start: number, end?: number) {
     return this.slice(start, end);
 };
 
+/**
+ * Reduces an array of numbers to the sum of its values.
+ */
 Array.prototype[sum] = function (this: number[]): number {
     return this.reduce((acc, num) => acc + num, 0);
 };
 
+/**
+ * Returns a new two-dimensional array with its elements transposed - that is,
+ * rows are turned into columns, and columns are turned into rows.
+ */
 Array.prototype[transpose] = function <T>(this: T[][]): T[][] {
     if (this.length === 0) {
         return [];
     }
 
-    const isEveryRowSameLength = this.every(row => row.length === this[0].length);
-
-    if (!isEveryRowSameLength) {
-        throw new Error();
+    // If a row has a different length from the others
+    for (const [i, row] of this.entries()) {
+        if (row.length !== this[0].length) {
+            throw new Error(`Row with index ${i} has a different length from the first row`);
+        }
     }
 
     const collen = this.length;
@@ -109,7 +122,7 @@ Array.prototype[transpose] = function <T>(this: T[][]): T[][] {
 
 /**
  * Returns a list of subarrays of the given size sliding along the given array.
- * @param size - The size of the subarrays
+ * @param size - The size of the subarrays.
  */
 Array.prototype[windowed] = function <T>(size: number) {
     const res: T[][] = [];
@@ -121,6 +134,9 @@ Array.prototype[windowed] = function <T>(size: number) {
     return res;
 };
 
+/**
+ * @deprecated
+ */
 Array.prototype[zip] = function () {
     const arr = [];
 
