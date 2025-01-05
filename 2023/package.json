@@ -3,11 +3,13 @@
     "type": "module",
     "scripts": {
         "build": "tsc --noEmitOnError && chmod +x build/cli.ts",
-        "dev": "tsx src/cli.js",
+        "dev": "npm run format; npm run lint; npm run type-check; tsx src/cli.ts",
+        "dev:ide": "printf \"Arguments: \"; read -r args; npm run dev -- $args",
         "format": "prettier . --write | grep -v 'unchanged'",
         "lint": "eslint .",
         "start": "node build/cli.js",
-        "test": "tsx tests/test.ts"
+        "test": "tsx tests/test.ts",
+        "type-check": "tsc --noEmit"
     },
     "devDependencies": {
         "@eslint/js": "^9.12.0",
