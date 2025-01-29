@@ -1,75 +1,110 @@
 // const Direction = ["up", "down", "left", "right"] as const;
 // type Direction = (typeof Direction)[number];
 
+type State = {
+    heatloss: number;
+    x: number;
+    y: number;
+    straightMoves: number;
+    dx: number;
+    dy: number;
+}
+
 export function solve(map: Input): Solution {
     const grid = map.split("\n").map(line => line.split("").map(Number));
+
+    const part1 = findMinimalHeatloss(grid);
+    const part2 = 0;
+
+    return { part1, part2 };
+}
+
+function findMinimalHeatloss(grid: number[][]): number {
+    const start = { heatloss: 0, x: 0, y: 0, straightMoves: 0, dx: 0, dy: 0 };
+    const queue: State[] = [start];
+    const hashStateMap = new Map<string, State>([[[start.x, start.y, start.straightMoves, start.dx, start.dy].join(), start]])
+    // const q = [[0, 0, 0, 0, 0, 0]];
+    const newVisited = new Map<State, boolean>();
+    // const oldVisited = {};
     const m = grid.length, n = grid[0].length;
-    const directions = [[-1, 0], [0, -1], [0, 1], [1, 0]];
+    // const directions = [[-1, 0], [0, -1], [0, 1], [1, 0]];
 
-    const q = [[0, 0, 0, 0, 0, 0]];
-    const visited = {};
-
-    while (q.length > 0) {
-        const [loss, x, y, k, dx, dy] = q.pop()!;
+    while (queue.length > 0) {
+        const curr = queue.pop()!;
+        const { heatloss: loss, x, y /* , straightMoves: k, dx, dy */ } = curr;
+        // const [loss, x, y, k, dx, dy] = q.pop()!;
 
         if (x === n - 1 && y === m - 1) {
-            return { part1: loss, part2: 0 };
+            return loss;
         }
 
-        if (visited[[x, y, k, dx, dy]]) {
+        if (newVisited.get(curr)) {
+        // if (newVisited.get([x, y, k, dx, dy].join())) {
+        // if (oldVisited[[x, y, k, dx, dy]]) {
             continue;
         }
 
-        visited[[x, y, k, dx, dy]] = true;
+        // oldVisited[[x, y, k, dx, dy]] = true;
+        // newVisited.set([x, y, k, dx, dy].join(), true);
+        newVisited.set(curr, true);
 
-        for (const [newdX, newdY] of directions) {
-            const straight = newdX === dx && newdY === dy;
-            const newX = x + newdX, newY = y + newdY;
+        // for (const [newdX, newdY] of directions) {
+        for (const next of getNextStates(curr, grid)) {
+            // const { dx: newdX, dy: newdY } = nuxt;
+            // const straight = newdX === dx && newdY === dy;
+            // const newX = x + newdX, newY = y + newdY;
 
-            if ((newdX === -dx && newdY === -dy) || (k === 3 && straight) || newX < 0 || newY < 0 || newX === n || newY === m) {
-                continue;
+            // if ((newdX === -dx && newdY === -dy) || (k === 3 && straight) || newX < 0 || newY < 0 || newX === n || newY === m) {
+            //     continue;
+            // }
+
+            // const newK = straight ? k + 1 : 1;
+            // const newHeatloss = loss + grid[newY][newX];
+
+            // const next = { heatloss: newHeatloss, x: newX, y: newY, straightMoves: newK, dx: newdX, dy: newdY }
+
+            // const existing = queue.find(state => state.x === next.x && state.y === next.y && state.straightMoves === next.straightMoves && state.dx === next.dx && state.dy === next.dy);
+            const hash = [next.x, next.y, next.straightMoves, next.dx, next.dy].join();
+            const existing = hashStateMap.get(hash);
+
+            // if (existing) {
+            if (existing && !newVisited.get(existing) && next.heatloss < existing.heatloss) {
+                existing.heatloss = next.heatloss;
+            } else if (!existing) {
+                hashStateMap.set(hash, next);
+                queue.push(next);
             }
 
-            const newK = straight ? k + 1 : 1;
-            q.push([loss + grid[newY][newX], newX, newY, newK, newdX, newdY]);
+            // q.push([loss + grid[newY][newX], newX, newY, newK, newdX, newdY]);
         }
 
-        q.sort((a, b) => b[0] - a[0]);
+        queue.sort((a, b) => b.heatloss - a.heatloss);
+        // q.sort((a, b) => b[0] - a[0]);
     }
 }
 
-// def part1(puzzle_input):
-// grid = [[int(d) for d in line] for line in puzzle_input.split('\n')]
-// m, n = len(grid), len(grid[0])
-// directions = [(-1, 0), (0, -1), (0, 1), (1, 0)]
+function getNextStates(curr: State, grid: number[][]): State[] {
+    const {heatloss: loss, x, y, straightMoves: k, dx, dy} = curr;
+    const directions = [[-1, 0], [0, -1], [0, 1], [1, 0]];
+    const m = grid.length, n = grid[0].length;
+    const next = [];
 
-// # tuple: (heat-loss, x-coord, y-coord, length-of-current-run, x-direction, y-direction)
-// q = [(0, 0, 0, 0, 0, 0)]
-// visited = set()
-// while q:
-// loss, x, y, k, dx, dy = heappop(q)
+    for (const [newdX, newdY] of directions) {
+        const straight = newdX === dx && newdY === dy;
+        const newX = x + newdX, newY = y + newdY;
 
-// if x == m-1 and y == n-1:
-// break
+        if ((newdX === -dx && newdY === -dy) || (k === 3 && straight) || newX < 0 || newY < 0 || newX === n || newY === m) {
+            continue;
+        }
 
-// if any((x, y, k_, dx, dy) in visited for k_ in range(1, k+1)):
-// continue
+        const newHeatloss = loss + grid[newY][newX];
+        const newK = straight ? k + 1 : 1;
 
-// visited.add((x, y, k, dx, dy))
-// for new_dx, new_dy in directions:
-// straight = (new_dx == dx and new_dy == dy)
-// new_x, new_y = x + new_dx, y + new_dy
+        next.push({ heatloss: newHeatloss, x: newX, y: newY, straightMoves: newK, dx: newdX, dy: newdY });
+    }
 
-// if any((new_dx == -dx and new_dy == -dy,
-// k == 3 and straight,
-// new_x < 0, new_y < 0,
-// new_x == m, new_y == n)):
-// continue
-
-// new_k = k + 1 if straight else 1
-// heappush(q, (loss + grid[new_x][new_y], new_x, new_y, new_k, new_dx, new_dy))
-
-// return loss
+    return next;
+}
 
 // type State = {
 //     x: number;
