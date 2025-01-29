@@ -1,109 +1,142 @@
-// const Direction = ["up", "down", "left", "right"] as const;
-// type Direction = (typeof Direction)[number];
+const Direction = ["up", "down", "left", "right"] as const;
+type Direction = (typeof Direction)[number];
 
-type State = {
+type Node = {
     heatloss: number;
-    x: number;
-    y: number;
-    straightMoves: number;
-    dx: number;
-    dy: number;
+    neighbors: Node[];
 }
 
 export function solve(map: Input): Solution {
-    const grid = map.split("\n").map(line => line.split("").map(Number));
+    const graph = buildGraph(map);
+    const totalHeatloss = calcTotalHeatloss(graph.start);
+    const min = Math.min(...graph.targets.map(target => totalHeatloss.get(target)).filter(n => n != undefined))
 
-    const part1 = findMinimalHeatloss(grid);
+    const part1 = min;
     const part2 = 0;
 
     return { part1, part2 };
 }
 
-function findMinimalHeatloss(grid: number[][]): number {
-    const start = { heatloss: 0, x: 0, y: 0, straightMoves: 0, dx: 0, dy: 0 };
-    const queue: State[] = [start];
-    const hashStateMap = new Map<string, State>([[[start.x, start.y, start.straightMoves, start.dx, start.dy].join(), start]])
-    // const q = [[0, 0, 0, 0, 0, 0]];
-    const newVisited = new Map<State, boolean>();
-    // const oldVisited = {};
-    const m = grid.length, n = grid[0].length;
-    // const directions = [[-1, 0], [0, -1], [0, 1], [1, 0]];
+function buildGraph(map: string): { start: Node, targets: Node[] } {
+    const grid = map.split("\n").map(line => line.split("").map(Number));
+    const width = grid[0].length;
+    const height = grid.length;
+
+    const layers: Record<Direction, Record<number, Node[][]>> = {
+        up: {
+            1: grid.map(row => row.map(heatloss => ({ heatloss, neighbors: [] }))),
+            2: grid.map(row => row.map(heatloss => ({ heatloss, neighbors: [] }))),
+            3: grid.map(row => row.map(heatloss => ({ heatloss, neighbors: [] }))),
+        },
+        down: {
+            1: grid.map(row => row.map(heatloss => ({ heatloss, neighbors: [] }))),
+            2: grid.map(row => row.map(heatloss => ({ heatloss, neighbors: [] }))),
+            3: grid.map(row => row.map(heatloss => ({ heatloss, neighbors: [] }))),
+        },
+        left: {
+            1: grid.map(row => row.map(heatloss => ({ heatloss, neighbors: [] }))),
+            2: grid.map(row => row.map(heatloss => ({ heatloss, neighbors: [] }))),
+            3: grid.map(row => row.map(heatloss => ({ heatloss, neighbors: [] }))),
+        },
+        right: {
+            1: grid.map(row => row.map(heatloss => ({ heatloss, neighbors: [] }))),
+            2: grid.map(row => row.map(heatloss => ({ heatloss, neighbors: [] }))),
+            3: grid.map(row => row.map(heatloss => ({ heatloss, neighbors: [] }))),
+        },
+    };
+
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            if (y > 0) {
+                layers.up[1][y][x].neighbors.push(layers.up[2][y - 1][x]);
+                layers.up[2][y][x].neighbors.push(layers.up[3][y - 1][x]);
+                layers.left[1][y][x].neighbors.push(layers.up[1][y - 1][x]);
+                layers.left[2][y][x].neighbors.push(layers.up[1][y - 1][x]);
+                layers.left[3][y][x].neighbors.push(layers.up[1][y - 1][x]);
+                layers.right[1][y][x].neighbors.push(layers.up[1][y - 1][x]);
+                layers.right[2][y][x].neighbors.push(layers.up[1][y - 1][x]);
+                layers.right[3][y][x].neighbors.push(layers.up[1][y - 1][x]);
+            }
+
+            if (x > 0) {
+                layers.left[1][y][x].neighbors.push(layers.left[2][y][x - 1]);
+                layers.left[2][y][x].neighbors.push(layers.left[3][y][x - 1]);
+                layers.up[1][y][x].neighbors.push(layers.left[1][y][x - 1]);
+                layers.up[2][y][x].neighbors.push(layers.left[1][y][x - 1]);
+                layers.up[3][y][x].neighbors.push(layers.left[1][y][x - 1]);
+                layers.down[1][y][x].neighbors.push(layers.left[1][y][x - 1]);
+                layers.down[2][y][x].neighbors.push(layers.left[1][y][x - 1]);
+                layers.down[3][y][x].neighbors.push(layers.left[1][y][x - 1]);
+            }
+
+            if (y + 1 < height) {
+                layers.down[1][y][x].neighbors.push(layers.down[2][y + 1][x]);
+                layers.down[2][y][x].neighbors.push(layers.down[3][y + 1][x]);
+                layers.left[1][y][x].neighbors.push(layers.down[1][y + 1][x]);
+                layers.left[2][y][x].neighbors.push(layers.down[1][y + 1][x]);
+                layers.left[3][y][x].neighbors.push(layers.down[1][y + 1][x]);
+                layers.right[1][y][x].neighbors.push(layers.down[1][y + 1][x]);
+                layers.right[2][y][x].neighbors.push(layers.down[1][y + 1][x]);
+                layers.right[3][y][x].neighbors.push(layers.down[1][y + 1][x]);
+            }
+
+            if (x + 1 < width) {
+                layers.right[1][y][x].neighbors.push(layers.right[2][y][x + 1]);
+                layers.right[2][y][x].neighbors.push(layers.right[3][y][x + 1]);
+                layers.up[1][y][x].neighbors.push(layers.right[1][y][x + 1]);
+                layers.up[2][y][x].neighbors.push(layers.right[1][y][x + 1]);
+                layers.up[3][y][x].neighbors.push(layers.right[1][y][x + 1]);
+                layers.down[1][y][x].neighbors.push(layers.right[1][y][x + 1]);
+                layers.down[2][y][x].neighbors.push(layers.right[1][y][x + 1]);
+                layers.down[3][y][x].neighbors.push(layers.right[1][y][x + 1]);
+            }
+        }
+    }
+
+    const start = { heatloss: grid[0][0], neighbors: [layers.down[1][1][0], layers.right[1][0][1]] };
+    const targets = [
+        layers.up[1][height - 1][width - 1],
+        layers.up[2][height - 1][width - 1],
+        layers.up[3][height - 1][width - 1],
+        layers.down[1][height - 1][width - 1],
+        layers.down[2][height - 1][width - 1],
+        layers.down[3][height - 1][width - 1],
+        layers.left[1][height - 1][width - 1],
+        layers.left[2][height - 1][width - 1],
+        layers.left[3][height - 1][width - 1],
+        layers.right[1][height - 1][width - 1],
+        layers.right[2][height - 1][width - 1],
+        layers.right[3][height - 1][width - 1],
+    ];
+
+    return { start, targets };
+}
+
+function calcTotalHeatloss(start: Node): WeakMap<Node, number> {
+    const totalHeatloss = new WeakMap<Node, number>([[start, 0]]);
+    const visited = new WeakMap<Node, boolean>();
+    const queue = [start];
 
     while (queue.length > 0) {
         const curr = queue.pop()!;
-        const { heatloss: loss, x, y /* , straightMoves: k, dx, dy */ } = curr;
-        // const [loss, x, y, k, dx, dy] = q.pop()!;
+        visited.set(curr, true);
 
-        if (x === n - 1 && y === m - 1) {
-            return loss;
-        }
+        for (const neighbor of curr.neighbors) {
+            const heatloss = totalHeatloss.get(curr) + neighbor.heatloss;
 
-        if (newVisited.get(curr)) {
-        // if (newVisited.get([x, y, k, dx, dy].join())) {
-        // if (oldVisited[[x, y, k, dx, dy]]) {
-            continue;
-        }
-
-        // oldVisited[[x, y, k, dx, dy]] = true;
-        // newVisited.set([x, y, k, dx, dy].join(), true);
-        newVisited.set(curr, true);
-
-        // for (const [newdX, newdY] of directions) {
-        for (const next of getNextStates(curr, grid)) {
-            // const { dx: newdX, dy: newdY } = nuxt;
-            // const straight = newdX === dx && newdY === dy;
-            // const newX = x + newdX, newY = y + newdY;
-
-            // if ((newdX === -dx && newdY === -dy) || (k === 3 && straight) || newX < 0 || newY < 0 || newX === n || newY === m) {
-            //     continue;
-            // }
-
-            // const newK = straight ? k + 1 : 1;
-            // const newHeatloss = loss + grid[newY][newX];
-
-            // const next = { heatloss: newHeatloss, x: newX, y: newY, straightMoves: newK, dx: newdX, dy: newdY }
-
-            // const existing = queue.find(state => state.x === next.x && state.y === next.y && state.straightMoves === next.straightMoves && state.dx === next.dx && state.dy === next.dy);
-            const hash = [next.x, next.y, next.straightMoves, next.dx, next.dy].join();
-            const existing = hashStateMap.get(hash);
-
-            // if (existing) {
-            if (existing && !newVisited.get(existing) && next.heatloss < existing.heatloss) {
-                existing.heatloss = next.heatloss;
-            } else if (!existing) {
-                hashStateMap.set(hash, next);
-                queue.push(next);
+            if (heatloss < (totalHeatloss.get(neighbor) ?? Infinity)) {
+                totalHeatloss.set(neighbor, heatloss);
             }
 
-            // q.push([loss + grid[newY][newX], newX, newY, newK, newdX, newdY]);
+            if (!visited.get(neighbor) && !queue.includes(neighbor)) {
+                queue.push(neighbor);
+            }
         }
 
-        queue.sort((a, b) => b.heatloss - a.heatloss);
-        // q.sort((a, b) => b[0] - a[0]);
-    }
-}
-
-function getNextStates(curr: State, grid: number[][]): State[] {
-    const {heatloss: loss, x, y, straightMoves: k, dx, dy} = curr;
-    const directions = [[-1, 0], [0, -1], [0, 1], [1, 0]];
-    const m = grid.length, n = grid[0].length;
-    const next = [];
-
-    for (const [newdX, newdY] of directions) {
-        const straight = newdX === dx && newdY === dy;
-        const newX = x + newdX, newY = y + newdY;
-
-        if ((newdX === -dx && newdY === -dy) || (k === 3 && straight) || newX < 0 || newY < 0 || newX === n || newY === m) {
-            continue;
-        }
-
-        const newHeatloss = loss + grid[newY][newX];
-        const newK = straight ? k + 1 : 1;
-
-        next.push({ heatloss: newHeatloss, x: newX, y: newY, straightMoves: newK, dx: newdX, dy: newdY });
+        queue.sort((a, b) => (totalHeatloss.get(b) ?? Infinity) - (totalHeatloss.get(a) ?? Infinity));
     }
 
-    return next;
+    return totalHeatloss;
 }
 
 // type State = {
