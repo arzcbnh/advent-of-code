@@ -1,4 +1,5 @@
 import {BinaryHeap} from "#root/utils/biheap.js";
+import {sum} from "#root/utils/arrayx.js";
 
 const Direction = ["up", "down", "left", "right"] as const;
 type Direction = (typeof Direction)[number];
@@ -21,7 +22,7 @@ export function solve(map: Input): Solution {
     // const min = Math.min(...stableCauldronGraph.targets.map(target => totalHeatloss.get(target)).filter(n => n != undefined))
 
     const part1 = pathfindBasicCrucibles(grid);
-    const part2 = 0;
+    const part2 = pathfindUltraCrucibles(grid);
 
     return { part1, part2 };
 }
@@ -49,6 +50,51 @@ function pathfindBasicCrucibles(grid: number[][]): number {
     const targetsHeatloss = targets.map(t => distance.get(t) ?? Infinity);
 
     return Math.min(...targetsHeatloss);
+}
+
+function pathfindUltraCrucibles(grid: number[][]): number {
+    const width = grid[0].length;
+    const height = grid.length;
+    const targets = [
+        `${width - 1},${height - 1},4,up`,
+        `${width - 1},${height - 1},5,up`,
+        `${width - 1},${height - 1},6,up`,
+        `${width - 1},${height - 1},7,up`,
+        `${width - 1},${height - 1},8,up`,
+        `${width - 1},${height - 1},9,up`,
+        `${width - 1},${height - 1},10,up`,
+        `${width - 1},${height - 1},4,down`,
+        `${width - 1},${height - 1},5,down`,
+        `${width - 1},${height - 1},6,down`,
+        `${width - 1},${height - 1},7,down`,
+        `${width - 1},${height - 1},8,down`,
+        `${width - 1},${height - 1},9,down`,
+        `${width - 1},${height - 1},10,down`,
+        `${width - 1},${height - 1},4,left`,
+        `${width - 1},${height - 1},5,left`,
+        `${width - 1},${height - 1},6,left`,
+        `${width - 1},${height - 1},7,left`,
+        `${width - 1},${height - 1},8,left`,
+        `${width - 1},${height - 1},9,left`,
+        `${width - 1},${height - 1},10,left`,
+        `${width - 1},${height - 1},4,right`,
+        `${width - 1},${height - 1},5,right`,
+        `${width - 1},${height - 1},6,right`,
+        `${width - 1},${height - 1},7,right`,
+        `${width - 1},${height - 1},8,right`,
+        `${width - 1},${height - 1},9,right`,
+        `${width - 1},${height - 1},10,right`,
+    ];
+
+    // const start = { heatloss: grid[0][0], neighbors: [layers.down[4][4][0], layers.right[4][0][4]] };
+    const graph = buildUltraCauldronGraph(grid);
+    const { distance } = dijkstra(graph, "0,0,4,up");
+    const targetsHeatloss = targets.map(t => distance.get(t) ?? Infinity);
+
+
+
+    return Math.min(...targetsHeatloss);
+
 }
 
 function buildBasicCauldronGraph(grid: number[][]): Graph {
@@ -139,196 +185,177 @@ function buildBasicCauldronGraph(grid: number[][]): Graph {
     return { nodes, edges };
 }
 
-// function buildStableCauldronGraph(map: string): { start: Node, targets: Node[] } {
-//     const grid = map.split("\n").map(line => line.split("").map(Number));
-//     const width = grid[0].length;
-//     const height = grid.length;
-//
-//     const layers: Record<Direction, Record<number, Node[][]>> = {
-//         "up": {
-//             4: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             5: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             6: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             7: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             8: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             9: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             10: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//         },
-//         "down": {
-//             4: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             5: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             6: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             7: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             8: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             9: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             10: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//         },
-//         "left": {
-//             4: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             5: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             6: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             7: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             8: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             9: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             10: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//         },
-//         "right": {
-//             4: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             5: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             6: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             7: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             8: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             9: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//             10: grid.map(row => row.map(heatloss => ({heatloss, neighbors: []}))),
-//         },
-//     }
-//
-//     for (let y = 0; y < height; y++) {
-//         for (let x = 0; x < width; x++) {
-//             if (y > 0) {
-//                 layers.up[4][y][x].neighbors.push(layers.up[5][y - 1][x]);
-//                 layers.up[5][y][x].neighbors.push(layers.up[6][y - 1][x]);
-//                 layers.up[6][y][x].neighbors.push(layers.up[7][y - 1][x]);
-//                 layers.up[7][y][x].neighbors.push(layers.up[8][y - 1][x]);
-//                 layers.up[8][y][x].neighbors.push(layers.up[9][y - 1][x]);
-//                 layers.up[9][y][x].neighbors.push(layers.up[10][y - 1][x]);
-//             }
-//
-//             if (y > 3) {
-//                 layers.left[4][y][x].neighbors.push(layers.up[4][y - 4][x]);
-//                 layers.left[5][y][x].neighbors.push(layers.up[4][y - 4][x]);
-//                 layers.left[6][y][x].neighbors.push(layers.up[4][y - 4][x]);
-//                 layers.left[7][y][x].neighbors.push(layers.up[4][y - 4][x]);
-//                 layers.left[8][y][x].neighbors.push(layers.up[4][y - 4][x]);
-//                 layers.left[9][y][x].neighbors.push(layers.up[4][y - 4][x]);
-//                 layers.left[10][y][x].neighbors.push(layers.up[4][y - 4][x]);
-//
-//                 layers.right[4][y][x].neighbors.push(layers.up[4][y - 4][x]);
-//                 layers.right[5][y][x].neighbors.push(layers.up[4][y - 4][x]);
-//                 layers.right[6][y][x].neighbors.push(layers.up[4][y - 4][x]);
-//                 layers.right[7][y][x].neighbors.push(layers.up[4][y - 4][x]);
-//                 layers.right[8][y][x].neighbors.push(layers.up[4][y - 4][x]);
-//                 layers.right[9][y][x].neighbors.push(layers.up[4][y - 4][x]);
-//                 layers.right[10][y][x].neighbors.push(layers.up[4][y - 4][x]);
-//             }
-//
-//             if (x > 0) {
-//                 layers.left[4][y][x].neighbors.push(layers.left[5][y][x - 1]);
-//                 layers.left[5][y][x].neighbors.push(layers.left[6][y][x - 1]);
-//                 layers.left[6][y][x].neighbors.push(layers.left[7][y][x - 1]);
-//                 layers.left[7][y][x].neighbors.push(layers.left[8][y][x - 1]);
-//                 layers.left[8][y][x].neighbors.push(layers.left[9][y][x - 1]);
-//                 layers.left[9][y][x].neighbors.push(layers.left[10][y][x - 1]);
-//             }
-//
-//             if (x > 3) {
-//                 layers.up[4][y][x].neighbors.push(layers.left[4][y][x - 4]);
-//                 layers.up[5][y][x].neighbors.push(layers.left[4][y][x - 4]);
-//                 layers.up[6][y][x].neighbors.push(layers.left[4][y][x - 4]);
-//                 layers.up[7][y][x].neighbors.push(layers.left[4][y][x - 4]);
-//                 layers.up[8][y][x].neighbors.push(layers.left[4][y][x - 4]);
-//                 layers.up[9][y][x].neighbors.push(layers.left[4][y][x - 4]);
-//                 layers.up[10][y][x].neighbors.push(layers.left[4][y][x - 4]);
-//
-//                 layers.down[4][y][x].neighbors.push(layers.left[4][y][x - 4]);
-//                 layers.down[5][y][x].neighbors.push(layers.left[4][y][x - 4]);
-//                 layers.down[6][y][x].neighbors.push(layers.left[4][y][x - 4]);
-//                 layers.down[7][y][x].neighbors.push(layers.left[4][y][x - 4]);
-//                 layers.down[8][y][x].neighbors.push(layers.left[4][y][x - 4]);
-//                 layers.down[9][y][x].neighbors.push(layers.left[4][y][x - 4]);
-//                 layers.down[10][y][x].neighbors.push(layers.left[4][y][x - 4]);
-//             }
-//
-//             if (y + 1 < height) {
-//                 layers.down[4][y][x].neighbors.push(layers.down[5][y + 1][x]);
-//                 layers.down[5][y][x].neighbors.push(layers.down[6][y + 1][x]);
-//                 layers.down[6][y][x].neighbors.push(layers.down[7][y + 1][x]);
-//                 layers.down[7][y][x].neighbors.push(layers.down[8][y + 1][x]);
-//                 layers.down[8][y][x].neighbors.push(layers.down[9][y + 1][x]);
-//                 layers.down[9][y][x].neighbors.push(layers.down[10][y + 1][x]);
-//             }
-//
-//             if (y + 4 < height) {
-//                 layers.left[4][y][x].neighbors.push(layers.down[4][y + 4][x]);
-//                 layers.left[5][y][x].neighbors.push(layers.down[4][y + 4][x]);
-//                 layers.left[6][y][x].neighbors.push(layers.down[4][y + 4][x]);
-//                 layers.left[7][y][x].neighbors.push(layers.down[4][y + 4][x]);
-//                 layers.left[8][y][x].neighbors.push(layers.down[4][y + 4][x]);
-//                 layers.left[9][y][x].neighbors.push(layers.down[4][y + 4][x]);
-//                 layers.left[10][y][x].neighbors.push(layers.down[4][y + 4][x]);
-//
-//                 layers.right[4][y][x].neighbors.push(layers.down[4][y + 4][x]);
-//                 layers.right[5][y][x].neighbors.push(layers.down[4][y + 4][x]);
-//                 layers.right[6][y][x].neighbors.push(layers.down[4][y + 4][x]);
-//                 layers.right[7][y][x].neighbors.push(layers.down[4][y + 4][x]);
-//                 layers.right[8][y][x].neighbors.push(layers.down[4][y + 4][x]);
-//                 layers.right[9][y][x].neighbors.push(layers.down[4][y + 4][x]);
-//                 layers.right[10][y][x].neighbors.push(layers.down[4][y + 4][x]);
-//             }
-//
-//             if (x + 1 < width) {
-//                 layers.right[4][y][x].neighbors.push(layers.right[5][y][x + 1]);
-//                 layers.right[5][y][x].neighbors.push(layers.right[6][y][x + 1]);
-//                 layers.right[6][y][x].neighbors.push(layers.right[7][y][x + 1]);
-//                 layers.right[7][y][x].neighbors.push(layers.right[8][y][x + 1]);
-//                 layers.right[8][y][x].neighbors.push(layers.right[9][y][x + 1]);
-//                 layers.right[9][y][x].neighbors.push(layers.right[10][y][x + 1]);
-//             }
-//
-//             if (x + 4 < width) {
-//                 layers.up[4][y][x].neighbors.push(layers.right[4][y][x + 4]);
-//                 layers.up[5][y][x].neighbors.push(layers.right[4][y][x + 4]);
-//                 layers.up[6][y][x].neighbors.push(layers.right[4][y][x + 4]);
-//                 layers.up[7][y][x].neighbors.push(layers.right[4][y][x + 4]);
-//                 layers.up[8][y][x].neighbors.push(layers.right[4][y][x + 4]);
-//                 layers.up[9][y][x].neighbors.push(layers.right[4][y][x + 4]);
-//                 layers.up[10][y][x].neighbors.push(layers.right[4][y][x + 4]);
-//
-//                 layers.down[4][y][x].neighbors.push(layers.right[4][y][x + 4]);
-//                 layers.down[5][y][x].neighbors.push(layers.right[4][y][x + 4]);
-//                 layers.down[6][y][x].neighbors.push(layers.right[4][y][x + 4]);
-//                 layers.down[7][y][x].neighbors.push(layers.right[4][y][x + 4]);
-//                 layers.down[8][y][x].neighbors.push(layers.right[4][y][x + 4]);
-//                 layers.down[9][y][x].neighbors.push(layers.right[4][y][x + 4]);
-//                 layers.down[10][y][x].neighbors.push(layers.right[4][y][x + 4]);
-//             }
-//         }
-//     }
-//
-//     const start = { heatloss: grid[0][0], neighbors: [layers.down[4][4][0], layers.right[4][0][4]] };
-//     const targets = [
-//         layers.up[4][height - 1][width - 1],
-//         layers.up[5][height - 1][width - 1],
-//         layers.up[6][height - 1][width - 1],
-//         layers.up[7][height - 1][width - 1],
-//         layers.up[8][height - 1][width - 1],
-//         layers.up[9][height - 1][width - 1],
-//         layers.up[10][height - 1][width - 1],
-//         layers.down[4][height - 1][width - 1],
-//         layers.down[5][height - 1][width - 1],
-//         layers.down[6][height - 1][width - 1],
-//         layers.down[7][height - 1][width - 1],
-//         layers.down[8][height - 1][width - 1],
-//         layers.down[9][height - 1][width - 1],
-//         layers.down[10][height - 1][width - 1],
-//         layers.left[4][height - 1][width - 1],
-//         layers.left[5][height - 1][width - 1],
-//         layers.left[6][height - 1][width - 1],
-//         layers.left[7][height - 1][width - 1],
-//         layers.left[8][height - 1][width - 1],
-//         layers.left[9][height - 1][width - 1],
-//         layers.left[10][height - 1][width - 1],
-//         layers.right[4][height - 1][width - 1],
-//         layers.right[5][height - 1][width - 1],
-//         layers.right[6][height - 1][width - 1],
-//         layers.right[7][height - 1][width - 1],
-//         layers.right[8][height - 1][width - 1],
-//         layers.right[9][height - 1][width - 1],
-//         layers.right[10][height - 1][width - 1],
-//     ];
-//
-//     return { start, targets };
-// }
+function buildUltraCauldronGraph(grid: number[][]): Graph {
+    const width = grid[0].length;
+    const height = grid.length;
+    const edges = new Map<string, Map<string, number>>();
+    const nodes = [];
+
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const coords = [
+                `${x},${y},4,up`,
+                `${x},${y},5,up`,
+                `${x},${y},6,up`,
+                `${x},${y},7,up`,
+                `${x},${y},8,up`,
+                `${x},${y},9,up`,
+                `${x},${y},10,up`,
+                `${x},${y},4,down`,
+                `${x},${y},5,down`,
+                `${x},${y},6,down`,
+                `${x},${y},7,down`,
+                `${x},${y},8,down`,
+                `${x},${y},9,down`,
+                `${x},${y},10,down`,
+                `${x},${y},4,left`,
+                `${x},${y},5,left`,
+                `${x},${y},6,left`,
+                `${x},${y},7,left`,
+                `${x},${y},8,left`,
+                `${x},${y},9,left`,
+                `${x},${y},10,left`,
+                `${x},${y},4,right`,
+                `${x},${y},5,right`,
+                `${x},${y},6,right`,
+                `${x},${y},7,right`,
+                `${x},${y},8,right`,
+                `${x},${y},9,right`,
+                `${x},${y},10,right`,
+            ];
+
+            nodes.push(...coords);
+            coords.forEach(coord => edges.set(coord, new Map()));
+        }
+    }
+
+    /* eslint-disable @typescript-eslint/no-non-null-assertion --
+     * Since every node has its edges map setup in a previous loop, every 'get'
+     * is assured to be non-null.
+     **/
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            if (y > 0) {
+                const weight = grid[y - 1][x];
+                edges.get(`${x},${y},4,up`)!.set(`${x},${y - 1},5,up`, weight);
+                edges.get(`${x},${y},5,up`)!.set(`${x},${y - 1},6,up`, weight);
+                edges.get(`${x},${y},6,up`)!.set(`${x},${y - 1},7,up`, weight);
+                edges.get(`${x},${y},7,up`)!.set(`${x},${y - 1},8,up`, weight);
+                edges.get(`${x},${y},8,up`)!.set(`${x},${y - 1},9,up`, weight);
+                edges.get(`${x},${y},9,up`)!.set(`${x},${y - 1},10,up`, weight);
+            }
+
+            if (y > 3) {
+                const weight = grid.slice(y - 4, y).flatMap(row => row[x])[sum]();
+                edges.get(`${x},${y},4,left`)!.set(`${x},${y - 4},4,up`, weight);
+                edges.get(`${x},${y},5,left`)!.set(`${x},${y - 4},4,up`, weight);
+                edges.get(`${x},${y},6,left`)!.set(`${x},${y - 4},4,up`, weight);
+                edges.get(`${x},${y},7,left`)!.set(`${x},${y - 4},4,up`, weight);
+                edges.get(`${x},${y},8,left`)!.set(`${x},${y - 4},4,up`, weight);
+                edges.get(`${x},${y},9,left`)!.set(`${x},${y - 4},4,up`, weight);
+                edges.get(`${x},${y},10,left`)!.set(`${x},${y - 4},4,up`, weight);
+
+                edges.get(`${x},${y},4,right`)!.set(`${x},${y - 4},4,up`, weight);
+                edges.get(`${x},${y},5,right`)!.set(`${x},${y - 4},4,up`, weight);
+                edges.get(`${x},${y},6,right`)!.set(`${x},${y - 4},4,up`, weight);
+                edges.get(`${x},${y},7,right`)!.set(`${x},${y - 4},4,up`, weight);
+                edges.get(`${x},${y},8,right`)!.set(`${x},${y - 4},4,up`, weight);
+                edges.get(`${x},${y},9,right`)!.set(`${x},${y - 4},4,up`, weight);
+                edges.get(`${x},${y},10,right`)!.set(`${x},${y - 4},4,up`, weight);
+            }
+
+            if (x > 0) {
+                const weight = grid[y][x - 1];
+                edges.get(`${x},${y},4,left`)!.set(`${x - 1},${y},5,left`, weight);
+                edges.get(`${x},${y},5,left`)!.set(`${x - 1},${y},6,left`, weight);
+                edges.get(`${x},${y},6,left`)!.set(`${x - 1},${y},7,left`, weight);
+                edges.get(`${x},${y},7,left`)!.set(`${x - 1},${y},8,left`, weight);
+                edges.get(`${x},${y},8,left`)!.set(`${x - 1},${y},9,left`, weight);
+                edges.get(`${x},${y},9,left`)!.set(`${x - 1},${y},10,left`, weight);
+            }
+
+            if (x > 3) {
+                const weight = grid[y].slice(x - 4, x)[sum]();
+                edges.get(`${x},${y},4,up`)!.set(`${x - 4},${y},4,left`, weight);
+                edges.get(`${x},${y},5,up`)!.set(`${x - 4},${y},4,left`, weight);
+                edges.get(`${x},${y},6,up`)!.set(`${x - 4},${y},4,left`, weight);
+                edges.get(`${x},${y},7,up`)!.set(`${x - 4},${y},4,left`, weight);
+                edges.get(`${x},${y},8,up`)!.set(`${x - 4},${y},4,left`, weight);
+                edges.get(`${x},${y},9,up`)!.set(`${x - 4},${y},4,left`, weight);
+                edges.get(`${x},${y},10,up`)!.set(`${x - 4},${y},4,left`, weight);
+
+                edges.get(`${x},${y},4,down`)!.set(`${x - 4},${y},4,left`, weight);
+                edges.get(`${x},${y},5,down`)!.set(`${x - 4},${y},4,left`, weight);
+                edges.get(`${x},${y},6,down`)!.set(`${x - 4},${y},4,left`, weight);
+                edges.get(`${x},${y},7,down`)!.set(`${x - 4},${y},4,left`, weight);
+                edges.get(`${x},${y},8,down`)!.set(`${x - 4},${y},4,left`, weight);
+                edges.get(`${x},${y},9,down`)!.set(`${x - 4},${y},4,left`, weight);
+                edges.get(`${x},${y},10,down`)!.set(`${x - 4},${y},4,left`, weight);
+            }
+
+            if (y + 1 < height) {
+                const weight = grid[y + 1][x];
+                edges.get(`${x},${y},4,down`)!.set(`${x},${y + 1},5,down`, weight);
+                edges.get(`${x},${y},5,down`)!.set(`${x},${y + 1},6,down`, weight);
+                edges.get(`${x},${y},6,down`)!.set(`${x},${y + 1},7,down`, weight);
+                edges.get(`${x},${y},7,down`)!.set(`${x},${y + 1},8,down`, weight);
+                edges.get(`${x},${y},8,down`)!.set(`${x},${y + 1},9,down`, weight);
+                edges.get(`${x},${y},9,down`)!.set(`${x},${y + 1},10,down`, weight);
+            }
+
+            if (y + 4 < height) {
+                const weight = grid.slice(y + 1, y + 5).flatMap(row => row[x])[sum]();
+                edges.get(`${x},${y},4,left`)!.set(`${x},${y + 4},4,down`, weight);
+                edges.get(`${x},${y},5,left`)!.set(`${x},${y + 4},4,down`, weight);
+                edges.get(`${x},${y},6,left`)!.set(`${x},${y + 4},4,down`, weight);
+                edges.get(`${x},${y},7,left`)!.set(`${x},${y + 4},4,down`, weight);
+                edges.get(`${x},${y},8,left`)!.set(`${x},${y + 4},4,down`, weight);
+                edges.get(`${x},${y},9,left`)!.set(`${x},${y + 4},4,down`, weight);
+                edges.get(`${x},${y},10,left`)!.set(`${x},${y + 4},4,down`, weight);
+
+                edges.get(`${x},${y},4,right`)!.set(`${x},${y + 4},4,down`, weight);
+                edges.get(`${x},${y},5,right`)!.set(`${x},${y + 4},4,down`, weight);
+                edges.get(`${x},${y},6,right`)!.set(`${x},${y + 4},4,down`, weight);
+                edges.get(`${x},${y},7,right`)!.set(`${x},${y + 4},4,down`, weight);
+                edges.get(`${x},${y},8,right`)!.set(`${x},${y + 4},4,down`, weight);
+                edges.get(`${x},${y},9,right`)!.set(`${x},${y + 4},4,down`, weight);
+                edges.get(`${x},${y},10,right`)!.set(`${x},${y + 4},4,down`, weight);
+            }
+
+            if (x + 1 < width) {
+                const weight = grid[y][x + 1];
+                edges.get(`${x},${y},4,right`)!.set(`${x + 1},${y},5,right`, weight);
+                edges.get(`${x},${y},5,right`)!.set(`${x + 1},${y},6,right`, weight);
+                edges.get(`${x},${y},6,right`)!.set(`${x + 1},${y},7,right`, weight);
+                edges.get(`${x},${y},7,right`)!.set(`${x + 1},${y},8,right`, weight);
+                edges.get(`${x},${y},8,right`)!.set(`${x + 1},${y},9,right`, weight);
+                edges.get(`${x},${y},9,right`)!.set(`${x + 1},${y},10,right`, weight);
+            }
+
+            if (x + 4 < width) {
+                const weight = grid[y].slice(x + 1, x + 5)[sum]();
+                edges.get(`${x},${y},4,up`)!.set(`${x + 4},${y},4,right`, weight);
+                edges.get(`${x},${y},5,up`)!.set(`${x + 4},${y},4,right`, weight);
+                edges.get(`${x},${y},6,up`)!.set(`${x + 4},${y},4,right`, weight);
+                edges.get(`${x},${y},7,up`)!.set(`${x + 4},${y},4,right`, weight);
+                edges.get(`${x},${y},8,up`)!.set(`${x + 4},${y},4,right`, weight);
+                edges.get(`${x},${y},9,up`)!.set(`${x + 4},${y},4,right`, weight);
+                edges.get(`${x},${y},10,up`)!.set(`${x + 4},${y},4,right`, weight);
+
+                edges.get(`${x},${y},4,down`)!.set(`${x + 4},${y},4,right`, weight);
+                edges.get(`${x},${y},5,down`)!.set(`${x + 4},${y},4,right`, weight);
+                edges.get(`${x},${y},6,down`)!.set(`${x + 4},${y},4,right`, weight);
+                edges.get(`${x},${y},7,down`)!.set(`${x + 4},${y},4,right`, weight);
+                edges.get(`${x},${y},8,down`)!.set(`${x + 4},${y},4,right`, weight);
+                edges.get(`${x},${y},9,down`)!.set(`${x + 4},${y},4,right`, weight);
+                edges.get(`${x},${y},10,down`)!.set(`${x + 4},${y},4,right`, weight);
+            }
+        }
+    }
+    /* eslint-enable @typescript-eslint/no-non-null-assertion */
+
+    return { nodes, edges };
+}
 
 function dijkstra(graph: Graph, start: string): { distance: Map<string, number>, previous: Map<string, string> } {
     const visited = new Set<string>();
