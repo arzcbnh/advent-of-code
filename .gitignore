@@ -1,0 +1,13 @@
+# Distribution, packaging, and development
+dist/
+build/
+.idea/
+.vscode/
+input.txt
+example.txt
+
+# Python
+.venv/
+__pycache__/
+.ruff_cache/
+*.egg-info/
