@@ -3,7 +3,7 @@
 Solutions for Advent of Code using a different language each event.
 
 | Year | Language                     | Status                    |
-|------|------------------------------|---------------------------|
+|:----:|------------------------------|---------------------------|
 | 2018 | Lua 5.4                      | Unfinished (up to day 3)  |
 | 2020 | Python 3.14                  | Ongoing                   |
 | 2021 | C99                          | Unfinished (up to day 18) |
@@ -35,10 +35,10 @@ C:\Users\arzcbnh\AppData\Local\arzcbnh\aoc\2020\07.txt
 
 ### `User-Agent` header
 
-All input fetching procedures include a `User-Agent` header. If not specified through the environment variable `AOC_USER_AGENT`, a string is composed from the template below, using a platform-provided username if possible, or `unknown` otherwise:
+All input fetching procedures include a `User-Agent` header composed from the template below. A username is obtained, in order of priority, via the `--user USER` CLI flag, through the environment variable `AOC_USER`, or from platform-specific utilities, if any. Otherwise, `unknown` is used.
 
 ```
-https://github.com/arzcbnh/advent-of-code by username
+https://github.com/arzcbnh/advent-of-code by USER
 ```
 
 ## Conventional Commits
