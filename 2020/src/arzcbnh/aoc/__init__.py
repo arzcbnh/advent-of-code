@@ -1,5 +1,6 @@
 import http.client
 import os
+from getpass import getuser
 from pathlib import Path
 from typing import Literal
 
@@ -103,4 +104,14 @@ def get_token() -> str:
 
 
 def get_user_agent() -> str:
-    return os.getenv('AOC_USER_AGENT', f'https://github.com/arzcbnh/advent-of-code by {os.getlogin()}')
+    sources = (lambda: os.environ['AOC_USER'], lambda: getuser())
+    username = 'unknown'
+
+    for source in sources:
+        try:
+            username = source()
+            break
+        except KeyError, OSError:
+            pass
+
+    return f'https://github.com/arzcbnh/advent-of-code by {username}'
