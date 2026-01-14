@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import Literal
 
-from arzcbnh.aoc.day import day01, day02, day03, day04, day05, day06, day07, day08
+from arzcbnh.aoc.day import day01, day02, day03, day04, day05, day06, day07, day08, day09
 from arzcbnh.aoc.util import cache
 
 
@@ -62,6 +62,7 @@ def get_answer(
         6: day06,
         7: day07,
         8: day08,
+        9: day09,
     }.get(day)
 
     if module is None:
