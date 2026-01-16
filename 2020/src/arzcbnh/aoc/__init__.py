@@ -4,7 +4,7 @@ from getpass import getuser
 from pathlib import Path
 from typing import Literal
 
-from arzcbnh.aoc.day import day01, day02, day03, day04, day05, day06, day07, day08, day09
+from arzcbnh.aoc.day import day01, day02, day03, day04, day05, day06, day07, day08, day09, day10
 from arzcbnh.aoc.util import cache
 
 
@@ -64,6 +64,7 @@ def get_answer(
         7: day07,
         8: day08,
         9: day09,
+        10: day10,
     }.get(day)
 
     if module is None:
