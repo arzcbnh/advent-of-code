@@ -3,8 +3,9 @@ dist/
 build/
 .idea/
 .vscode/
-input.txt
-example.txt
+.zed/
+*input.txt
+*example.txt
 
 # Python
 .venv/
