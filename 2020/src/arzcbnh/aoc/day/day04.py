@@ -1,5 +1,5 @@
 import re
-from typing import Callable
+from collections.abc import Callable
 
 field_validators = {
     'byr': lambda x: 1920 <= int(x) <= 2002,

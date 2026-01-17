@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from enum import Enum, StrEnum
-from typing import Callable
 
 
 class Signal(Enum):
