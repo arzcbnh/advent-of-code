@@ -13,6 +13,7 @@ from arzcbnh.aoc.day import (
     day09,
     day10,
     day11,
+    day12,
 )
 
 
@@ -61,6 +62,7 @@ def get_answer(day: int, part: int, data: str) -> int | str:
         9: day09,
         10: day10,
         11: day11,
+        12: day12,
     }.get(day)
 
     solution = {
