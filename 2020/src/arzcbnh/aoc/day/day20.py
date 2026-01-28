@@ -1,7 +1,22 @@
 from collections import deque
+from dataclasses import dataclass
 from enum import IntEnum
 from itertools import combinations, product
 from math import prod
+
+# Relies on:
+# - Edges always being asymmetric
+# - Edges being unique
+# - Monsters never intersecting
+
+
+pattern = (
+    '                  # ',
+    '#    ##    ##    ###',
+    ' #  #  #  #  #  #   ',
+)
+
+coords = tuple((i, j) for i, line in enumerate(pattern) for j, char in enumerate(line) if char == '#')
 
 
 class Axis(IntEnum):
@@ -22,8 +37,6 @@ class Image:
 
     def __getitem__(self, i: int) -> list[int]:
         return self.data[i]
-
-    # def __iter__(self):
 
     def __repr__(self):
         map = {-1: 'O', 0: '.', 1: '#'}
@@ -97,33 +110,181 @@ class Tile:
         self.edgeset.mirror(axis)
 
 
+@dataclass
+class Tilee:
+    id: int
+    data: list[list[int]]
+    edges: list[str]
+
+    def __hash__(self):
+        return self.id
+
+
+# class Tilee:
+#     def __init__(self, id: int, data: list[list[int]], edges: list[str]):
+#         self.id = id
+#         self.data = data
+#         self.edges = edges
+#         self.rotations = 0
+#         self.flipped = False
+#
+#     def get_edge(self, dir: Direction) -> str:
+#         return self.edges[(1 - 2 * self.flipped) * (dir - self.rotations) % 4]
+#
+#
 def part1(data: str) -> int:
-    tiles = parse_input(data)
-    link_tiles(tiles)
+    tiles = parsee_inputt(data)
+
+    # link_tiles(tiles)
 
     return prod(tile.id for tile in tiles if len(tile.edgeset.links) == 2)
 
 
+# def part1(data: str) -> int:
+#     tiles = parse_input(data)
+#     link_tiles(tiles)
+#
+#     return prod(tile.id for tile in tiles if len(tile.edgeset.links) == 2)
+#
+#
 def part2(data: str) -> int:
-    tiles = parse_input(data)
-    # for tile in tiles:
-    #     print(tile)
+    # tiles: list[Tilee] = parse_input(data)
+    tiles: set[Tilee] = parsee_inputt(data)
+    tile = tiles.pop()
+
+    # unvisited = {tiles[0]}
+    unvisited = {tile}
+    # alignments: dict[int, tuple[int, int]] = { tiles[0].id: (0, 0) }
+    alignments: dict[Tilee, tuple[int, int]] = {tile: (1, 0)}
+    # grid: dict[int, tuple[int, int]] = { tiles[0].id: (0, 0) }
+    grid: dict[Tilee, tuple[int, int]] = {tile: (0, 0)}
+
+    while unvisited:
+        tile = unvisited.pop()
+
+        i, j = grid[tile]
+        flip, rotation = alignments[tile]
+        tile_dirs = [flip * (dir - rotation) % 4 for dir in Direction]
+
+        # print(list(t.id for t in tiles))
+        for other in list(tiles):
+            for a, b in product(range(4), repeat=2):
+                # for dir, other_dir in product(tile_dirs, Direction):
+                # for dir, other_dir in product(Direction, repeat=2):
+                #     dir = flip * (dir - rotation) % 4
+                edge = tile.edges[a]
+                other_edge = other.edges[b]
+
+                if edge == other_edge:
+                    other_flip = -flip
+                elif edge == other_edge[::-1]:
+                    other_flip = flip
+
+                # if tile.id == 2311 and other.id == 1427:
+                #     print(edge, other_edge)
+
+                if edge == other_edge:
+                    actual_dir = (flip * a + rotation) % 4
+                    alignments[other] = (other_flip, (actual_dir + other_flip * (2 - b)) % 4)
+                    grid[other] = i + 1 - abs(actual_dir - 2), j + 1 - abs(actual_dir - 1)
+                    unvisited.add(other)
+                    tiles.remove(other)
+                    # print(dir, other_dir)
+                    print(
+                        # f'{tile.id} at ({i}, {j}) aligned by {alignments[tile.id]} connected with {other.id} at {grid[other.id]} and aligned to {alignments[other.id]}'
+                        f'{tile.id} edge {a, edge} connected with {other.id} on edge {b, other_edge}'
+                    )
+                    break
+                elif edge == other_edge[::-1]:
+                    actual_dir = (flip * a + rotation) % 4
+                    alignments[other] = (other_flip, (actual_dir + other_flip * (2 - b)) % 4)
+                    grid[other] = i + 1 - abs(actual_dir - 2), j + 1 - abs(actual_dir - 1)
+                    unvisited.add(other)
+                    tiles.remove(other)
+                    # if tile.id == 2473 and other.id == 1171:
+                    #     print(j, actual_dir, j + 1 - abs(actual_dir - 1))
+                    print(
+                        # f'{tile.id} at ({i}, {j}) aligned by {alignments[tile.id]} connected with {other.id} at {grid[other.id]} and aligned to {alignments[other.id]}'
+                        f'{tile.id} edge {a, edge} connected with {other.id} on edge {b, other_edge}'
+                    )
+                    break
+            # exit()
+        # print(list(t.id for t in unvisited))
+
+    min_i = min(grid.values(), key=lambda x: x[0])[0]
+    max_i = max(grid.values(), key=lambda x: x[0])[0]
+    min_j = min(grid.values(), key=lambda x: x[1])[1]
+    max_j = max(grid.values(), key=lambda x: x[1])[1]
+
+    placed = [tile for tile]
+
+    print('alignments:', alignments)
+    print('grid:', grid)
+    exit()
+
     link_tiles(tiles)
-    # print(len(tiles))
+    align_tiles(tiles)
 
-    # for tile in tiles:
-    #     print(tile)
-    # print('')
-    # print(tiles[0])
-    # exit()
+    img = construct_image(tiles)
+    orient_image(img)
+    tag_monsters(img)
 
-    # for t in tiles:
-    #     print(t)
-    #     print(t.image)
-    #     print('')
-    # print('-------------')
+    return calc_water_roughness(img)
 
-    goalmap = {0: 2, 2: 0, 1: 3, 3: 1}
+
+# def part2(data: str) -> int:
+#     tiles = parse_input(data)
+#     link_tiles(tiles)
+#     align_tiles(tiles)
+#
+#     img = construct_image(tiles)
+#     orient_image(img)
+#     tag_monsters(img)
+#
+#     return calc_water_roughness(img)
+#
+#
+def parse_input(data: str) -> list[Tile]:
+    tiles = []
+
+    for section in data.split('\n\n'):
+        title, *lines = section.splitlines()
+
+        id = int(title[5:-1])
+        zipped = list(zip(*lines))
+        edges = [lines[0], ''.join(zipped[-1]), lines[-1][::-1], ''.join(zipped[0][::-1])]  # up, right, down, left
+        image = [[int(c == '#') for c in line[1:-1]] for line in lines[1:-1]]
+
+        tiles.append(Tile(id, image, edges))
+
+    return tiles
+
+
+def parsee_inputt(data: str) -> set[Tilee]:
+    tiles = set()
+
+    for section in data.split('\n\n'):
+        title, *lines = section.splitlines()
+
+        id = int(title[5:-1])
+        zipped = list(zip(*lines))
+        edges = [lines[0], ''.join(zipped[-1]), lines[-1][::-1], ''.join(zipped[0][::-1])]  # up, right, down, left
+        image = [[int(c == '#') for c in line[1:-1]] for line in lines[1:-1]]
+
+        tiles.add(Tilee(id, image, edges))
+
+    return tiles
+
+
+def link_tiles(tiles: list[Tile]) -> None:
+    for tile, other in combinations(tiles, 2):
+        for (i, (_, edge, _)), (j, (_, other_edge, _)) in product(enumerate(tile), enumerate(other)):
+            if edge == other_edge or edge == other_edge[::-1]:
+                tile.edgeset.links[i] = other, j
+                other.edgeset.links[j] = tile, i
+
+
+def align_tiles(tiles: list[Tile]) -> None:
     queue = deque()
     aligned = set()
 
@@ -139,19 +300,7 @@ def part2(data: str) -> int:
 
             other, j = link
             other_dir, other_edge, _ = other[j]
-
-            # try:
-            #     dir, other_dir = tile.dir_ids.index(id), other.dir_ids.index(other_id)
-            # except:
-            #     print(id)
-            #     exit()
-            # dir, other_dir = tile.dir_ids.index(id), other.dir_ids.index(other_id)
-            # edge, other_edge = tile.id_edges[id], other.id_edges[other_id]
-            # rots = goalmap[dir] - other_dir
             other.rotate((dir + 2) % 4 - other_dir)
-
-            # if edge == other_edge and edge == other_edge[::-1]:
-            #     raise ValueError(f'{tile.id} and {other.id} have symmetrical edges')
 
             if edge == other_edge:
                 other.mirror(dir % 2)
@@ -159,43 +308,10 @@ def part2(data: str) -> int:
             aligned.add(other)
             queue.append(other)
 
-            # print(tile.id, 'aligned', other.id)
-            # print(list(tile.id for tile in queue))
-            # for tiled in tiles:
-            #     print(tiled)
-            # print('')
-        # exit()
 
-    # exit()
-    # for tile in tiles:
-    #     print(tile)
-    # exit()
-    # print('\n'.join(tile.body))
-    # for other, _ in tile.connections.values():
-    #     print(other)
-    #     print('\n'.join(other.body))
-    # for tile in tiles:
-    #     print(tile)
-    #     print('\n'.join(tile.body))
-    # for t in tiles:
-    #     print(t)
-    #     print(t.image)
-    #     print('')
-    # print('-------------------')
-
-    for tile in tiles:
-        if len(tile.edgeset.links) == 2:
-            dirs = {tile[i][0] for i in tile.edgeset.links}
-            if dirs == {Direction.RIGHT, Direction.DOWN}:
-                break
-
-    # print(tile.id)
-    # for tile in tiles:
-    #     print(tile)
-    # exit()
-
+def construct_image(tiles: list[Tile]) -> Image:
     image = []
-    # row = []
+    tile = get_upper_left_tile(tiles)
 
     while tile is not None:
         row = []
@@ -209,21 +325,9 @@ def part2(data: str) -> int:
         image.append(row)
         tile = row[0]
         i = tile.edgeset.orientations.index(Direction.DOWN)
-        # edge = next((edge for edge, dir in tile.orientation.items() if dir == 2), None)
-        # if edge not in tile.connections:
-        #     break
         link = tile[i][2]
         tile = link and link[0]
 
-    # print(image)
-
-    # image = image[::-1]
-    # image = image[::-1]
-    for row in image:
-        print(' '.join(str(tile.id) for tile in row))
-    # for row in image:
-    #     for tile in
-    # exit()
     built = []
 
     for row in image:
@@ -231,211 +335,67 @@ def part2(data: str) -> int:
             formed = []
             for tile in row:
                 formed += tile.image.data[i]
-                # formed += [' ']
             built.append(formed)
-        # built.append('')
-    # print('\n'.join(built))
 
-    omg = Image(built)
-    # omg.mirror(Axis.X)
-
-    # for row in image:
-    #     for t in row:
-    #         print(t)
-    # print()
-
-    # print('\n'.join(''.join(str(p) for p in row) for row in omg.data))
-    # print(omg)
-
-    #     goal = """\
-    # .#.#..#.##...#.##..#####
-    # ###....#.#....#..#......
-    # ##.##.###.#.#..######...
-    # ###.#####...#.#####.#..#
-    # ##.#....#.##.####...#.##
-    # ...########.#....#####.#
-    # ....#..#...##..#.#.###..
-    # .####...#..#.....#......
-    # #..#.##..#..###.#.##....
-    # #.####..#.####.#.#.###..
-    # ###.#.#...#.######.#..##
-    # #.####....##..########.#
-    # ##..##.#...#...#.#.#.#..
-    # ...#..#..#.#.##..###.###
-    # .#.#....#.##.#...###.##.
-    # ###.#...#..#.##.######..
-    # .#.#.###.##.##.#..#.##..
-    # .####.###.#...###.#..#.#
-    # ..#.#..#..#.#.#.####.###
-    # #..####...#.#.#.###.###.
-    # #####..#####...###....##
-    # #.##..#..#...#..####...#
-    # .#.###..##..##..####.##.
-    # ...###...##...#...#..###\
-    # """
-
-    # print('\n'.join(built[::-1]) == goal)
-
-    # for tile in tiles:
-    #     if any(len(tile.candidates[i]) > 1 for i in range(4)):
-    #         print(tile)
-    #     if all(len(tile.candidates[i]) == 0 for i in range(4)):
-    #         print('error:', tile)
-
-    tag_monster(omg)
-
-    # return prod(tile.id for tile in tiles if sum(1 for i in range(4) if tile.connections[i] is not None) == 2)
-    # return count_monsters(built)
-    return sum(sum(cell for cell in line if cell == 1) for line in omg.data)
+    return Image(built)
 
 
-def parse_input(data: str) -> list[Tile]:
-    tiles = []
+def get_upper_left_tile(tiles) -> Tile:
+    for tile in tiles:
+        if len(tile.edgeset.links) == 2:
+            dirs = {tile[i][0] for i in tile.edgeset.links}
+            if dirs == {Direction.RIGHT, Direction.DOWN}:
+                return tile
 
-    for section in data.split('\n\n'):
-        # print(section)
-        # exit()
-        title, *lines = section.splitlines()
-        # print(id)
-
-        # body = [line[1:-1] for line in lines[1:-1]]
-        id = int(title[5:-1])
-        zipped = list(zip(*lines))
-        edges = [lines[0], ''.join(zipped[-1]), lines[-1][::-1], ''.join(zipped[0][::-1])]  # up, right, down, left
-        image = [[int(c == '#') for c in line[1:-1]] for line in lines[1:-1]]
-        # edges = tuple(''.join(raw).replace('.', '0').replace('#', '1') for raw in raw_edges)
-        # edges = tuple(''.join(raw) for raw in raw_edges)
-
-        tiles.append(Tile(id, image, edges))
-        # print(tiles[0])
-        # exit()
-
-    return tiles
+    raise RuntimeError('No upper left tile found')
 
 
-def link_tiles(tiles: list[Tile]) -> None:
-    for tile, other in combinations(tiles, 2):
-        for (i, (_, edge, _)), (j, (_, other_edge, _)) in product(enumerate(tile), enumerate(other)):
-            if edge == other_edge or edge == other_edge[::-1]:
-                tile.edgeset.links[i] = other, j
-                other.edgeset.links[j] = tile, i
+def orient_image(img: Image) -> None:
+    transformations = (
+        lambda: img.rotate_cw(1),
+        lambda: img.rotate_cw(2),
+        lambda: img.rotate_cw(3),
+        lambda: img.mirror(Axis.X),
+        lambda: img.rotate_cw(1),
+        lambda: img.rotate_cw(2),
+        lambda: img.rotate_cw(3),
+    )
+
+    rows = len(img.data) - 2
+    cols = len(img.data[0]) - 19
+
+    for xf in transformations:
+        for i, j in product(range(rows), range(cols)):
+            if has_monster(img, i, j):
+                return
+
+        xf()
 
 
-pattern = """
-                  # 
-#    ##    ##    ###
- #  #  #  #  #  #   
-""".strip('\n')
+def tag_monsters(img: Image) -> None:
+    rows = len(img.data) - 2
+    cols = len(img.data[0]) - 19
 
-coords = tuple((i, j) for i, line in enumerate(pattern.splitlines()) for j, char in enumerate(line) if char == '#')
-
-# print(coords)
-# exit()
-
-
-def tag_monster(image: Image):
-    # monster_pattern = [
-    #     [18],
-    #     [0, 5, 6, 11, 12, 17, 18, 19],
-    #     [1, 4, 7, 10, 13, 16],
-    # ]
-    #
-    idxs = []
-
-    # try:
-    for _ in range(2):
-        for r in range(4):
-            image.rotate_cw(r)
-            for i in range(len(image.data) - 2):
-                for j in range(len(image.data[i]) - 19):
-                    if has_monster(image, i, j):
-                        idxs.append((i, j))
-
-            if idxs:
-                break
-        else:
-            break
-
-        image.mirror(Axis.X)
-
-    for i, j in idxs:
-        for k, d in coords:
-            image[i + k][j + d] = -1
-    # except:
-    #     print(i, j)
-    #     exit()
-    # print(image)
-    # return 0
-    # for line in image.data:
-    #     print(line)
-    return sum(sum(line) for line in image.data)
-    # raise RuntimeError('No monsters found')
+    for i, j in product(range(rows), range(cols)):
+        if has_monster(img, i, j):
+            for k, l in coords:
+                img[i + k][j + l] = -1
 
 
 def has_monster(img: Image, i: int, j: int) -> bool:
-    try:
-        for k, l in coords:
-            if img[i + k][j + l] == 0:
-                return False
+    for k, l in coords:
+        if img[i + k][j + l] == 0:
+            return False
 
-        return True
-
-    except:
-        print(img)
-        print(i, j, k, l)
-        print(img[7])
-        exit()
+    return True
 
 
-# def count_monsters(image: list[str]) -> int:
-#     monster_pattern = [
-#         [18],
-#         [0, 5, 6, 11, 12, 17, 18, 19],
-#         [1, 4, 7, 10, 13, 16],
-#     ]
-#
-#     idxs = []
-#
-#     for _ in range(2):
-#         for r in range(4):
-#             image = rotate(image, r)
-#             for i in range(len(image) - 2):
-#                 for j in range(len(image[i]) - 19):
-#                     if all(all(image[i + k][j + d] == '#' for d in monster_pattern[k]) for k in range(3)):
-#                         idxs.append((i, j))
-#
-#             if idxs:
-#                 break
-#         else:
-#             break
-#
-#         image = flip(image, 0)
-#
-#     for i, j in idxs:
-#         for k in range(3):
-#             for d in monster_pattern[k]:
-#                 image[i + k] = image[i + k][: j + d] + 'O' + image[i + k][1 + j + d :]
-#     # print('\n'.join(image))
-#
-#     return sum(sum(1 for c in line if c == '#') for line in image)
-#     # raise RuntimeError('No monsters found')
-#
-#
-def rotate(image: list[str], times: int):
-    times %= 4
+def calc_water_roughness(img: Image) -> int:
+    roughness = 0
+    rows = len(img.data)
+    cols = len(img.data[0])
 
-    if times == 0:
-        return image
-    elif times == 1:
-        return [''.join(line) for line in zip(*image[::-1])]
-    elif times == 2:
-        return [line[::-1] for line in image[::-1]]
-    else:
-        return [''.join(line) for line in zip(*image)][::-1]
+    for i, j in product(range(rows), range(cols)):
+        roughness += img[i][j] == 1
 
-
-def flip(image: list[str], axis: int):
-    if axis == 0:
-        return [line[::-1] for line in image]
-    else:
-        return image[::-1]
+    return roughness
