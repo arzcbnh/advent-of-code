@@ -1,37 +1,86 @@
 from dataclasses import dataclass
+from enum import IntEnum
 from itertools import product
-from math import prod
 
 # Relies on:
 # - Edges always being asymmetric
 # - Edges being unique
 # - Monsters never intersecting
 
+MONSTER_PATTERN =         \
+'                  # \n'  \
+'#    ##    ##    ###\n'  \
+' #  #  #  #  #  #   \n'  # fmt:skip
+
+
+class Direction(IntEnum):
+    UP = 0
+    RIGHT = 1
+    DOWN = 2
+    LEFT = 3
+
 
 @dataclass
-class Tilee:
+class Transform:
+    rotation: int
+    flip: bool
+
+    def compose(self: 'Transform', source: Direction, target: Direction, flip: bool) -> 'Transform':
+        pass
+
+    def __mul__(self, other: Direction) -> Direction:
+        pass
+
+
+@dataclass(frozen=True)
+class Tile:
     id: int
     data: list[list[int]]
-    edges: list[str]
+    edges: tuple[str, str, str, str]
 
-    def __hash__(self):
-        return self.id
+    @staticmethod
+    def parse(raw: str) -> 'Tile':
+        title, *lines = raw.splitlines()
+
+        id = int(title[5:-1])
+        edges = Tile.parse_edges(lines)
+        image = [[int(char == '#') for char in line[1:-1]] for line in lines[1:-1]]
+
+        return Tile(id, image, edges)
+
+    @staticmethod
+    def parse_edges(data: list[str]) -> tuple[str, str, str, str]:
+        zipped = list(zip(*data))
+
+        up = data[0]
+        down = data[-1][::-1]
+        left = ''.join(zipped[0][::-1])
+        right = ''.join(zipped[-1])
+
+        return up, right, down, left
+
+    def match(self, other: 'Tile') -> tuple[Direction, Direction, bool] | None:
+        pass
+
+    # def get_edge(self, direction: Direction, transform: Transform = Transform(0, False)) -> str:
+    #     dir = ((1 - 2 * flip * a) + rotation) % 4
+    #     pass
+
+    # def iter_edges(self, transform: Transform = Transform(0, False)):
+    #     edges = self.edges.copy()
 
 
 class Pattern:
-    def __init__(self):
-        pattern = (
-            '                  # ',
-            '#    ##    ##    ###',
-            ' #  #  #  #  #  #   ',
+    def __init__(self, pattern: str):
+        self.coords = tuple(
+            (i, j) for i, line in enumerate(pattern.splitlines()) for j, char in enumerate(line) if char == '#'
         )
 
-        self.coords = tuple((i, j) for i, line in enumerate(pattern) for j, char in enumerate(line) if char == '#')
-
-    def matches_at(self, image: list[list[int]], i: int, j: int) -> bool:
+    def match(self, image: list[list[int]], i: int, j: int) -> bool:
         height, width = len(image), len(image[0])
 
-        for di, dj in ((i + coord[0], j + coord[1]) for coord in self.coords):
+        for coord in self.coords:
+            di, dj = i + coord[0], j + coord[1]
             if di >= height or dj >= width or image[di][dj] == 0:
                 return False
 
@@ -39,96 +88,152 @@ class Pattern:
 
 
 def part1(data: str) -> int:
-    tiles = parsee_inputt(data)
-    return prod(tile.id for tile in find_corners(tiles))
+    tiles = {Tile.parse(section) for section in data.split('\n\n')}
+    return multiply_corner_ids(tiles)
 
 
 def part2(data: str) -> int:
-    tiles = parsee_inputt(data)
-    alignments, grid = build_grid(tiles)
+    tiles = parse_input(data)
+    transforms, grid = build_grid(tiles)
     placed = assemble_image(alignments, grid)
 
     return calc_water_roughness(placed)
 
 
-def parsee_inputt(data: str) -> set[Tilee]:
-    tiles = set()
+def parse_input(data: str) -> dict[int, Tile]:
+    tiles = {}
 
     for section in data.split('\n\n'):
-        title, *lines = section.splitlines()
+        # title, *lines = section.splitlines()
+        #
+        # id = int(title[5:-1])
+        # edges = parse_edges(lines)
+        # image = [[int(char == '#') for char in line[1:-1]] for line in lines[1:-1]]
 
-        id = int(title[5:-1])
-        zipped = list(zip(*lines))
-        edges = [lines[0], ''.join(zipped[-1]), lines[-1][::-1], ''.join(zipped[0][::-1])]  # up, right, down, left
-        image = [[int(c == '#') for c in line[1:-1]] for line in lines[1:-1]]
-
-        tiles.add(Tilee(id, image, edges))
+        tile = Tile.parse(section)
+        tiles[tile.id] = tile
+        # tiles[id] = Tile(id, image, edges)
 
     return tiles
 
 
-def find_corners(tiles: set[Tilee]) -> list[Tilee]:
-    corners = []
+# def parse_edges(data: list[str]) -> list[str]:
+#     zipped = list(zip(*data))
+#
+#     up = data[0]
+#     down = data[-1][::-1]
+#     left = ''.join(zipped[0][::-1])
+#     right = ''.join(zipped[-1])
+#
+#     return [up, right, down, left]
 
-    for tile in tiles:
-        matches = 0
 
-        for other, a, b in product(tiles - {tile}, range(4), range(4)):
-            edge = tile.edges[a]
-            other_edge = other.edges[b]
+# def align_tiles(tiles: dict[int, Tile]) -> dict[int, Transform]:
+#     available = tiles.copy()
+#     id, tile = tiles.popitem()
+#
+#     transforms = {id: Transform(0, False)}
+#     frontier = {id: tile}
+#
+#     for fixed_id, fixed in frontier.popitem():
+#         for free_id, free in available.items():
+#             pass
 
-            if edge == other_edge or edge == other_edge[::-1]:
-                matches += 1
-            if matches == 3:
+
+def multiply_corner_ids(tiles: set[Tile]) -> int:
+    # tiles = list(tiles)
+    result = 1
+    # corners = []
+
+    for tile_a in tiles:
+        adjacent = 0
+
+        for tile_b in tiles - {tile_a}:
+            adjacent += tile_a.match(tile_b) is not None
+            if adjacent >= 3:
                 break
 
-        if matches == 2:
-            corners.append(tile)
+        if adjacent == 2:
+            result *= tile_a.id
 
-    return corners
+    return result
 
 
-def build_grid(tiles: set[Tilee]):
-    tiles = tiles.copy()
-    tile = tiles.pop()
+def build_grid(tiles: set[Tile]):
+    available = tiles.copy()
+    placed = available.pop()
 
-    unvisited = {(0, 0)}
-    alignments: dict[Tilee, tuple[int, int]] = {tile: (1, 0)}
-    grid: dict[tuple[int, int], Tilee] = {(0, 0): tile}
+    transforms = {placed: Transform(0, False)}
+    grid = {(0, 0): placed}
+    frontier = {(0, 0)}
+    matches = set()
 
-    while unvisited:
-        i, j = unvisited.pop()
+    while frontier:
+        index = frontier.pop()
+        placed = grid[index]
+        placed_xfm = transforms[placed]
 
-        tile = grid[i, j]
-        flip, rotation = alignments[tile]
-
-        for other in list(tiles):
-            for a, b in product(range(4), repeat=2):
-                edge = tile.edges[a]
-                other_edge = other.edges[b]
-                other_flip = calc_flip_coeff(edge, other_edge) * flip
-
-                if not other_flip:
-                    continue
-
-                dir = (flip * a + rotation) % 4
-                alignments[other] = (other_flip, (dir + other_flip * (2 - b)) % 4)
-                oi, oj = i + 1 - abs(dir - 2), j + 1 - abs(dir - 1)
-                grid[oi, oj] = other
-                unvisited.add((oi, oj))
-                tiles.remove(other)
+        for loose in available:
+            if len(matches) >= 4:
                 break
+            if (match_result := placed.match(loose)) is None:
+                continue
 
-    return alignments, grid
+            placed_dir, loose_dir, mirrored = match_result
+            loose_xfm = placed_xfm.compose(placed_dir, loose_dir, mirrored)
+            loose_index = move_index(index, loose_dir)
+
+            transforms[loose] = loose_xfm
+            grid[loose_index] = loose
+            matches.add(loose)
+
+        available -= matches
+        matches.clear()
+
+        # for placed_dir, loose_dir in product(Direction, repeat=2):
+        #     placed_edge = placed.get_edge(placed_dir, placed_xfm)
+        #     loose_edge = loose.get_edge(loose_dir)
+        #     mirrored = are_mirrored_edges(placed_edge, loose_edge)
+        #
+        #     # if edges match
+        #     #   compose new orientation (requires placed_dir, loose_dir, placed_edge, loose_edge, transform)
+        #     #   add to frontier, remove from available
+        #     # other_flip = bool(flip - calc_flip_coeff(placed_edge, loose_edge))
+        #
+        #     if flip is None:
+        #         continue
+        #
+        #     dir = ((1 - 2 * flip * a) + rotation) % 4
+        #     transforms[loose] = Transform((dir + other_flip * (2 - b)) % 4, mirrored)
+        #     oi, oj = i + 1 - abs(dir - 2), j + 1 - abs(dir - 1)
+        #     grid[oi, oj] = loose
+        #     frontier.add((oi, oj))
+        #     available.remove(loose)
+        #     break
+
+    return transforms, grid
 
 
-def calc_flip_coeff(a: str, b: str) -> int:
-    if a == b:
-        return -1
-    elif a == b[::-1]:
-        return 1
-    else:
-        return 0
+def move_index(index: tuple[int, int], direction: Direction) -> tuple[int, int]:
+    return index[0] - direction * 2 + 1, index[1] + direction - 1
+
+
+# def are_mirrored_edges(a: str, b: str) -> bool | None:
+#     if a == b:
+#         return False
+#     elif a == b[::-1]:
+#         return True
+#     else:
+#         return None
+#
+#
+# def calc_flip_coeff(a: str, b: str) -> int | None:
+#     if a == b:
+#         return 1
+#     elif a == b[::-1]:
+#         return 0
+#     else:
+#         return None
 
 
 def assemble_image(alignments, grid):
@@ -162,7 +267,7 @@ def calc_water_roughness(img: list[list[int]]) -> int:
 
     for xf in transformations:
         for i, j in product(range(height), range(width)):
-            if pattern.matches_at(img, i, j):
+            if pattern.match(img, i, j):
                 roughness -= 15
 
         if roughness != black_pixels:

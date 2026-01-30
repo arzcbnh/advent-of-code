@@ -10,8 +10,8 @@ from pathlib import Path
 
 
 def main():
-    args = parse_args()
-    year, day, part = args.year, args.day, args.part
+    config = parse_args()
+    year, day, part = config.year, config.day, config.part
     data = get_data(year, day)
     cmd, env = get_event_config(year)
     cmd += [str(day)]
@@ -71,7 +71,7 @@ def get_data(year, day):
         os.makedirs(os.path.dirname(cache_file), exist_ok=True)
         Path(cache_file).write_text(data, encoding='utf-8')
 
-    return data
+    return data.rstrip() + '\n'
 
 
 def get_event_config(year):
@@ -86,6 +86,8 @@ def get_event_config(year):
 
 def raw_print(cmd, env, data):
     p = spawn(cmd, env, data)
+    if p.stderr != '':
+        print(p.stderr, file=sys.stderr)
     print(p.stdout.strip())
 
 
@@ -105,11 +107,13 @@ def pretty_print(year, day, cmd, env, data):
             if res1 is None and part1.done():
                 res1, err1 = get_answer(part1)
                 if err1 is not None:
+                    # FIXME: Prints error to stdout and without colors
                     print(err1)
 
             if res2 is None and part2.done():
                 res2, err2 = get_answer(part2)
                 if err2 is not None:
+                    # FIXME: Prints error to stdout and without colors
                     print(err2)
 
             print(f'Part 1: {res1 or spinner_frame}')
