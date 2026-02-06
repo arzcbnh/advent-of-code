@@ -5,7 +5,7 @@ Solutions for Advent of Code using a different language each event.
 | Year | Language                     | Status                    |
 |:----:|------------------------------|---------------------------|
 | 2018 | Lua 5.4                      | Unfinished (up to day 3)  |
-| 2020 | Python 3.14                  | Ongoing                   |
+| 2020 | Python 3.14                  | Complete                  |
 | 2021 | C99                          | Unfinished (up to day 18) |
 | 2023 | TypeScript 5.6 on Node 22.10 | Unfinished (up to day 17) |
 | 2024 | Java SE 21                   | Unfinished (up to day 8)  |
